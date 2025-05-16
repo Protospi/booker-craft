@@ -13,16 +13,16 @@ export function Header() {
         
         <nav className="hidden md:flex space-x-8 text-sm">
           <Link href="/">
-            <a className="font-medium text-primary">Home</a>
+            <span className="cursor-pointer font-medium text-primary">Home</span>
           </Link>
           <Link href="/books">
-            <a className="font-medium text-gray-500 hover:text-gray-900">My Books</a>
+            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">My Books</span>
           </Link>
           <Link href="/about">
-            <a className="font-medium text-gray-500 hover:text-gray-900">About</a>
+            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">About</span>
           </Link>
           <Link href="/help">
-            <a className="font-medium text-gray-500 hover:text-gray-900">Help</a>
+            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">Help</span>
           </Link>
         </nav>
         

@@ -160,15 +160,18 @@ export async function generateImage(prompt: string): Promise<string> {
 
 // Helper function to format chapter content into pages
 function formatChapterIntoPages(content: string, imageUrl?: string, isFirstChapter = false): ChapterPage[] {
-  // For simplicity, we'll create a single page with all content
-  // In a real app, you'd parse the HTML and split it into multiple pages based on content length
+  // For simplicity, we'll create a set of pages with a predetermined content length
   const pages: ChapterPage[] = [];
   
+  // Create the first page with chapter title, image, and start of content
   pages.push({
-    content,
+    content: content,
     imageUrl,
     isChapterStart: true
   });
+  
+  // In a real app, we'd split long content into multiple pages
+  // For now, we're keeping it simple with just one page per chapter
   
   return pages;
 }
