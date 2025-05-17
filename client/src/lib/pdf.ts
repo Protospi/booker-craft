@@ -236,17 +236,33 @@ export const generatePDF = async (book: Book): Promise<void> => {
           chapterHeader.style.marginBottom = '10mm';
           chapterPage.appendChild(chapterHeader);
           
-          // Chapter image if available
+          // Chapter image if available - using similar approach as cover image
           if (page.imageUrl) {
-            const chapterImage = document.createElement('img');
-            chapterImage.src = page.imageUrl;
-            chapterImage.style.width = '100%';
-            chapterImage.style.maxHeight = '50mm';
-            chapterImage.style.objectFit = 'cover';
-            chapterImage.style.marginBottom = '10mm';
-            chapterImage.style.borderRadius = '3px';
-            chapterImage.crossOrigin = 'anonymous';
-            chapterPage.appendChild(chapterImage);
+            const imageContainer = document.createElement('div');
+            imageContainer.style.width = '100%';
+            imageContainer.style.height = '50mm';
+            imageContainer.style.marginBottom = '10mm';
+            imageContainer.style.borderRadius = '3px';
+            imageContainer.style.overflow = 'hidden';
+            imageContainer.style.position = 'relative';
+            imageContainer.style.backgroundColor = '#f0f0f0';
+            
+            // Background div with image
+            const imgBackground = document.createElement('div');
+            imgBackground.style.position = 'absolute';
+            imgBackground.style.top = '0';
+            imgBackground.style.left = '0';
+            imgBackground.style.width = '100%';
+            imgBackground.style.height = '100%';
+            imgBackground.style.backgroundImage = `url(${page.imageUrl})`;
+            imgBackground.style.backgroundSize = 'cover';
+            imgBackground.style.backgroundPosition = 'center';
+            
+            // Add a thin border for better appearance
+            imageContainer.style.border = '1px solid #ddd';
+            
+            imageContainer.appendChild(imgBackground);
+            chapterPage.appendChild(imageContainer);
           }
         }
         
