@@ -131,12 +131,23 @@ export default function MyBooks() {
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
                 <div className="flex flex-col md:flex-row">
                   {/* Book Cover Miniature */}
-                  <div className="w-full md:w-1/5 h-48 md:h-auto relative">
-                    <img
-                      src={book.cover.imageUrl}
-                      alt={book.cover.title}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-full md:w-1/5 h-48 md:h-auto relative bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
+                    {book.cover.imageUrl ? (
+                      <img
+                        src={book.cover.imageUrl}
+                        alt={book.cover.title}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // If image fails to load, show a fallback
+                          e.currentTarget.src = "https://via.placeholder.com/300x400/f8fafc/475569?text=" + encodeURIComponent(book.cover.title);
+                        }}
+                      />
+                    ) : (
+                      <div className="text-center p-4">
+                        <div className="text-xl font-bold text-primary-800">{book.cover.title}</div>
+                        <div className="text-sm text-primary-600 mt-2">{book.cover.subtitle}</div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Book Information */}
