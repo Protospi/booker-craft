@@ -17,12 +17,21 @@ export default function MyBooks() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [, setLocation] = useLocation();
   
-  // Auto-select the most recently created book when navigating to this page
+  // Check if we need to show a specific book (after generation)
   useEffect(() => {
-    if (savedBooks.length > 0 && !selectedBook) {
-      setSelectedBook(savedBooks[savedBooks.length - 1]);
+    const lastGeneratedBookTitle = localStorage.getItem('last-generated-book');
+    
+    if (lastGeneratedBookTitle && savedBooks.length > 0) {
+      // Find the book with the matching title
+      const bookToShow = savedBooks.find(book => book.cover.title === lastGeneratedBookTitle);
+      
+      if (bookToShow) {
+        setSelectedBook(bookToShow);
+        // Clear the last generated book so we don't auto-select it next time
+        localStorage.removeItem('last-generated-book');
+      }
     }
-  }, [savedBooks, selectedBook]);
+  }, [savedBooks]);
 
   const handleViewBook = useCallback((book: Book) => {
     setSelectedBook(book);

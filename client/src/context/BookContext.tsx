@@ -23,7 +23,10 @@ export const BookProvider: React.FC<BookProviderProps> = ({ children }) => {
   // Initialize from localStorage if available
   const [savedBooks, setSavedBooks] = useState<Book[]>(() => {
     const saved = localStorage.getItem('saved-books');
-    return saved ? JSON.parse(saved) : [];
+    const parsedBooks = saved ? JSON.parse(saved) : [];
+    
+    // If there are no books, return an empty array
+    return parsedBooks;
   });
 
   // Update localStorage when books change

@@ -25,6 +25,10 @@ export default function Home() {
       // Save the generated book to our context
       if (generatedBook) {
         saveBook(generatedBook);
+        
+        // Store the newly created book title in localStorage so MyBooks can select it
+        localStorage.setItem('last-generated-book', generatedBook.cover.title);
+        
         // Redirect to My Books page
         navigate("/my-books");
       }
