@@ -4,6 +4,7 @@ import { GenerationProgress } from "@/components/GenerationProgress";
 import { BookViewer } from "@/components/BookViewer";
 import { useBookGeneration } from "@/hooks/use-book-generation";
 import { BookParams } from "@shared/schema";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Home() {
   const [view, setView] = useState<"form" | "progress" | "book">("form");

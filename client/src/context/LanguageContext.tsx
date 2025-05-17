@@ -34,6 +34,25 @@ export type Translations = {
     createButton: string;
     backButton: string;
   };
+  bookViewer: {
+    createNew: string;
+    downloadPdf: string;
+    nextPage: string;
+    previousPage: string;
+    tableOfContents: string;
+  };
+  generationProgress: {
+    generating: string;
+    step: string;
+    planning: string;
+    writing: string;
+    illustrating: string;
+    formatting: string;
+  };
+  notFound: {
+    title: string;
+    message: string;
+  };
   footer: {
     copyright: string;
     terms: string;
@@ -73,6 +92,25 @@ const translations: Record<Language, Translations> = {
       createButton: 'Create Book',
       backButton: 'Back',
     },
+    bookViewer: {
+      createNew: 'Create New Book',
+      downloadPdf: 'Download PDF',
+      nextPage: 'Next Page',
+      previousPage: 'Previous Page',
+      tableOfContents: 'Table of Contents',
+    },
+    generationProgress: {
+      generating: 'Generating your book',
+      step: 'Step',
+      planning: 'Planning your story',
+      writing: 'Writing content',
+      illustrating: 'Creating illustrations',
+      formatting: 'Formatting book',
+    },
+    notFound: {
+      title: '404 Page Not Found',
+      message: 'The page you are looking for does not exist.',
+    },
     footer: {
       copyright: '© 2025 Booker. All rights reserved.',
       terms: 'Terms of Service',
@@ -109,6 +147,25 @@ const translations: Record<Language, Translations> = {
       createButton: 'Criar Livro',
       backButton: 'Voltar',
     },
+    bookViewer: {
+      createNew: 'Criar Novo Livro',
+      downloadPdf: 'Baixar PDF',
+      nextPage: 'Próxima Página',
+      previousPage: 'Página Anterior',
+      tableOfContents: 'Índice',
+    },
+    generationProgress: {
+      generating: 'Gerando seu livro',
+      step: 'Etapa',
+      planning: 'Planejando sua história',
+      writing: 'Escrevendo conteúdo',
+      illustrating: 'Criando ilustrações',
+      formatting: 'Formatando livro',
+    },
+    notFound: {
+      title: '404 Página Não Encontrada',
+      message: 'A página que você está procurando não existe.',
+    },
     footer: {
       copyright: '© 2025 Booker. Todos os direitos reservados.',
       terms: 'Termos de Serviço',
@@ -144,6 +201,25 @@ const translations: Record<Language, Translations> = {
       ageGroup: 'Grupo de Edad',
       createButton: 'Crear Libro',
       backButton: 'Volver',
+    },
+    bookViewer: {
+      createNew: 'Crear Nuevo Libro',
+      downloadPdf: 'Descargar PDF',
+      nextPage: 'Página Siguiente',
+      previousPage: 'Página Anterior',
+      tableOfContents: 'Índice',
+    },
+    generationProgress: {
+      generating: 'Generando tu libro',
+      step: 'Paso',
+      planning: 'Planificando tu historia',
+      writing: 'Escribiendo contenido',
+      illustrating: 'Creando ilustraciones',
+      formatting: 'Formateando libro',
+    },
+    notFound: {
+      title: '404 Página No Encontrada',
+      message: 'La página que estás buscando no existe.',
     },
     footer: {
       copyright: '© 2025 Booker. Todos los derechos reservados.',
