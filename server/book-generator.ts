@@ -2,12 +2,19 @@ import OpenAI from "openai";
 import { BookParams, Book, BookCover, BookChapter, ChapterPage } from "@shared/schema";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
+// Get the default API key from environment variables
+const getOpenAI = (apiKey?: string) => {
+  // Use provided API key if available, otherwise fall back to environment variable
+  return new OpenAI({ apiKey: apiKey || process.env.OPENAI_API_KEY || "" });
+};
 
 export async function generateBook(params: BookParams): Promise<Book> {
   try {
+    // Extract API key from params if available
+    const apiKey = (params as any).apiKey;
+    
     // 1. Generate book skeleton
-    const skeleton = await generateBookSkeleton(params.theme, params.numChapters, params.language);
+    const skeleton = await generateBookSkeleton(params.theme, params.numChapters, params.language, apiKey);
     
     // 2. Generate chapters concurrently
     const chaptersPromises = skeleton.chapters.map(async (chapterInfo) => {
@@ -16,7 +23,8 @@ export async function generateBook(params: BookParams): Promise<Book> {
         chapterInfo.title,
         chapterInfo.number,
         params.numChapters,
-        params.language
+        params.language,
+        apiKey
       );
       
       // 3. Generate images if needed
@@ -25,7 +33,7 @@ export async function generateBook(params: BookParams): Promise<Book> {
         // Allocate images across chapters
         if (chapterInfo.number <= params.numImages) {
           const imagePrompt = `A high-quality illustration for a book chapter titled "${chapterInfo.title}" about ${params.theme}`;
-          chapterImageUrl = await generateImage(imagePrompt);
+          chapterImageUrl = await generateImage(imagePrompt, apiKey);
         }
       }
       
@@ -48,7 +56,7 @@ export async function generateBook(params: BookParams): Promise<Book> {
     
     // 5. Generate cover image
     const coverImagePrompt = `A striking book cover for a book about ${params.theme}`;
-    const coverImageUrl = await generateImage(coverImagePrompt);
+    const coverImageUrl = await generateImage(coverImagePrompt, apiKey);
     
     // 6. Assemble final book
     const book: Book = {
@@ -57,14 +65,14 @@ export async function generateBook(params: BookParams): Promise<Book> {
         subtitle: skeleton.subtitle,
         imageUrl: coverImageUrl,
         centralImageUrl: params.numImages > 0 ? 
-          await generateImage(`A centered focal image for a book about ${params.theme}`) : 
+          await generateImage(`A centered focal image for a book about ${params.theme}`, apiKey) : 
           undefined
       },
       chapters
     };
     
     return book;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in generateBook:", error);
     throw new Error(`Failed to generate book: ${error.message}`);
   }
@@ -73,9 +81,12 @@ export async function generateBook(params: BookParams): Promise<Book> {
 export async function generateBookSkeleton(
   theme: string,
   numChapters: number,
-  language: string
+  language: string,
+  apiKey?: string
 ): Promise<{ title: string; subtitle: string; chapters: Array<{ number: number; title: string }> }> {
   try {
+    const openai = getOpenAI(apiKey);
+    
     const prompt = `Create a book skeleton for a book about ${theme}. Generate a title, a subtitle, and ${numChapters} chapter titles. The content should be in ${language}.
     Return the result as JSON in this exact format:
     {
@@ -94,9 +105,9 @@ export async function generateBookSkeleton(
       response_format: { type: "json_object" }
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const result = JSON.parse(response.choices[0].message.content || "{}");
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating book skeleton:", error);
     throw new Error(`Failed to generate book skeleton: ${error.message}`);
   }
@@ -107,9 +118,11 @@ export async function generateChapterContent(
   chapterTitle: string,
   chapterNumber: number,
   totalChapters: number,
-  language: string
+  language: string,
+  apiKey?: string
 ): Promise<{ content: string; summary: string }> {
   try {
+    const openai = getOpenAI(apiKey);
     const isFirstChapter = chapterNumber === 1;
     const isLastChapter = chapterNumber === totalChapters;
 
@@ -131,16 +144,18 @@ export async function generateChapterContent(
       response_format: { type: "json_object" }
     });
 
-    const result = JSON.parse(response.choices[0].message.content);
+    const result = JSON.parse(response.choices[0].message.content || "{}");
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating chapter content:", error);
     throw new Error(`Failed to generate chapter content: ${error.message}`);
   }
 }
 
-export async function generateImage(prompt: string): Promise<string> {
+export async function generateImage(prompt: string, apiKey?: string): Promise<string> {
   try {
+    const openai = getOpenAI(apiKey);
+    
     const response = await openai.images.generate({
       model: "dall-e-3",
       prompt,
@@ -150,7 +165,7 @@ export async function generateImage(prompt: string): Promise<string> {
     });
 
     return response.data[0].url;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating image:", error);
     // If image generation fails, return a placeholder URL or throw an error
     // For simplicity, we're using an error fallback URL here
