@@ -169,6 +169,7 @@ export async function generateImage(prompt: string, apiKey?: string): Promise<st
     });
 
     if (response?.data?.[0]?.url) {
+      console.log("Image URL returned:", response.data[0].url);
       return response.data[0].url;
     } else {
       console.error("No image URL returned");
