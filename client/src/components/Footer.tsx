@@ -1,6 +1,9 @@
 import { BookOpen } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function Footer() {
+  const { t } = useLanguage();
+  
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -11,7 +14,7 @@ export function Footer() {
           </div>
           
           <div className="text-sm text-gray-500 mb-4 md:mb-0 text-center md:text-left">
-            © {new Date().getFullYear()} Booker AI. All rights reserved. Powered by OpenAI.
+            {t.footer.copyright}
           </div>
           
           <div className="flex space-x-6">

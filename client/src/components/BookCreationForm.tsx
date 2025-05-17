@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { BookExamples } from "./BookExamples";
 import { bookParamsSchema } from "@shared/schema";
+import { useLanguage } from "@/context/LanguageContext";
 
 export type BookFormProps = {
   onSubmit: (values: z.infer<typeof bookParamsSchema>) => void;
 };
 
 export function BookCreationForm({ onSubmit }: BookFormProps) {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,10 +51,10 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
     <div className="max-w-4xl mx-auto px-4 py-10">
       <div className="text-center mb-10">
         <h2 className="text-3xl font-serif font-bold text-gray-900 sm:text-4xl mb-2">
-          Create Your AI-Generated Book
+          {t.home.title}
         </h2>
         <p className="text-lg text-gray-600">
-          Turn your ideas into a fully formatted book in minutes
+          {t.home.subtitle}
         </p>
       </div>
 
@@ -64,7 +66,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
               name="theme"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Book Theme</FormLabel>
+                  <FormLabel>{t.bookForm.theme}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Cooking recipes, Science fiction, Travel guide..."
@@ -82,7 +84,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="totalPages"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Total Pages</FormLabel>
+                    <FormLabel>{t.bookForm.length}</FormLabel>
                     <FormControl>
                       <div className="flex items-center">
                         <Input
@@ -105,7 +107,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="numChapters"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Chapters</FormLabel>
+                    <FormLabel>{t.bookForm.genre}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -125,7 +127,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="numImages"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Images</FormLabel>
+                    <FormLabel>{t.bookForm.setting}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -145,7 +147,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="language"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Language</FormLabel>
+                    <FormLabel>{t.bookForm.language}</FormLabel>
                     <Select 
                       onValueChange={field.onChange} 
                       defaultValue={field.value}
@@ -178,7 +180,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 className="w-full bg-primary py-3 h-auto text-base"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Processing..." : "Generate Book"}
+                {isSubmitting ? "Processing..." : t.bookForm.createButton}
               </Button>
             </div>
           </form>
