@@ -614,9 +614,77 @@ export const generatePDF = async (book: Book): Promise<void> => {
         const content = document.createElement('div');
         content.style.fontSize = '12px';
         content.style.lineHeight = '1.5';
+        content.style.fontFamily = 'Arial, sans-serif';
         content.innerHTML = page.content;
-        
-        // Replace any image URLs in the content with base64 data
+
+        // Apply proper styling to all HTML elements to ensure they render correctly in PDF
+        content.querySelectorAll('h1, h2, h3, h4, h5, h6, p, ul, ol, li').forEach((element) => {
+          // Cast to HTMLElement to access style properties
+          const el = element as HTMLElement;
+          
+          // Apply specific styles based on element type
+          if (el.tagName === 'H1' || el.tagName === 'H2') {
+            el.style.fontSize = '1.5em';
+            el.style.fontWeight = 'bold';
+            el.style.margin = '0.83em 0';
+            el.style.fontFamily = 'serif';
+          } else if (el.tagName === 'H3') {
+            el.style.fontSize = '1.3em';
+            el.style.fontWeight = 'bold';
+            el.style.margin = '0.67em 0';
+            el.style.fontFamily = 'serif';
+          } else if (el.tagName === 'H4') {
+            el.style.fontSize = '1.15em';
+            el.style.fontWeight = 'bold';
+            el.style.margin = '0.5em 0';
+          } else if (el.tagName === 'P') {
+            el.style.margin = '0.75em 0';
+            el.style.display = 'block';
+          } else if (el.tagName === 'UL' || el.tagName === 'OL') {
+            el.style.paddingLeft = '2em';
+            el.style.margin = '0.75em 0';
+          } else if (el.tagName === 'LI') {
+            el.style.display = 'list-item';
+            el.style.margin = '0.5em 0';
+          }
+
+          // Ensure all elements have the necessary display property
+          if (!el.style.display) {
+            el.style.display = 'block';
+          }
+        });
+
+        // Ensure list items have proper bullet points in the PDF
+        content.querySelectorAll('ul').forEach((ul) => {
+          const ulEl = ul as HTMLUListElement;
+          ulEl.style.listStyleType = 'disc';
+          ulEl.querySelectorAll('li').forEach((li) => {
+            const liEl = li as HTMLLIElement;
+            liEl.style.display = 'list-item';
+            liEl.style.marginLeft = '1em';
+            // Ensure bullet points are visible
+            if (!liEl.style.listStyleType) {
+              liEl.style.listStyleType = 'disc';
+            }
+          });
+        });
+
+        // Ensure ordered lists have proper numbering
+        content.querySelectorAll('ol').forEach((ol) => {
+          const olEl = ol as HTMLOListElement;
+          olEl.style.listStyleType = 'decimal';
+          olEl.querySelectorAll('li').forEach((li) => {
+            const liEl = li as HTMLLIElement;
+            liEl.style.display = 'list-item';
+            liEl.style.marginLeft = '1em';
+            // Ensure numbers are visible
+            if (!liEl.style.listStyleType) {
+              liEl.style.listStyleType = 'decimal';
+            }
+          });
+        });
+
+        // Process any images inside the content
         const contentImages = content.querySelectorAll('img');
         for (const img of Array.from(contentImages) as HTMLImageElement[]) {
           if (img.src.startsWith('http')) {
@@ -639,7 +707,40 @@ export const generatePDF = async (book: Book): Promise<void> => {
             }
           }
         }
-        
+
+        // Apply global CSS to improve text rendering in PDFs
+        const styleTag = document.createElement('style');
+        styleTag.textContent = `
+          /* Global styles for PDF rendering */
+          div, p, h1, h2, h3, h4, h5, h6, ul, ol, li {
+            page-break-inside: avoid;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            page-break-after: avoid;
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            line-height: 1.2;
+          }
+          p {
+            margin-bottom: 0.5em;
+            line-height: 1.5;
+          }
+          ul, ol {
+            margin-left: 2em;
+            margin-bottom: 0.75em;
+          }
+          li {
+            margin-bottom: 0.25em;
+          }
+          strong, b {
+            font-weight: bold;
+          }
+          em, i {
+            font-style: italic;
+          }
+        `;
+        content.appendChild(styleTag);
+
         chapterPage.appendChild(content);
         
         // Add the chapter page to PDF
