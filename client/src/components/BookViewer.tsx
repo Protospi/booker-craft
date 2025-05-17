@@ -185,13 +185,32 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                   </h2>
                   <ul className="space-y-3">
                     {book.chapters.map((chapter) => (
-                      <li key={chapter.number} className="flex items-baseline">
+                      <li 
+                        key={chapter.number} 
+                        className="flex items-baseline p-2 hover:bg-gray-50 rounded cursor-pointer transition-colors"
+                        onClick={() => {
+                          // Find the index of the first page of this chapter
+                          const chapterStartIndex = flattenedPages.findIndex(
+                            page => page.type === 'chapter' && 
+                                  page.content.chapterNumber === chapter.number && 
+                                  page.content.isChapterStart
+                          );
+                          if (chapterStartIndex >= 0) {
+                            jumpToPage(chapterStartIndex);
+                          }
+                        }}
+                      >
                         <span className="font-medium">Chapter {chapter.number}:</span>
                         <span className="flex-grow border-b border-dotted border-gray-300 mx-2"></span>
                         <span>{chapter.title}</span>
                       </li>
                     ))}
                   </ul>
+                  
+                  <div className="mt-8 bg-blue-50 rounded-md p-4 text-sm text-blue-700 border border-blue-200">
+                    <p className="font-medium">Navigation Tip</p>
+                    <p>Click on any chapter to jump directly to it, or use the navigation buttons to browse page by page.</p>
+                  </div>
                 </div>
               )}
               
@@ -246,6 +265,27 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                 </div>
               )}
             </div>
+          </div>
+          
+          {/* Page indicator dots */}
+          <div className="mt-6 flex justify-center space-x-2">
+            {Array.from({ length: Math.min(totalPages, 10) }).map((_, index) => (
+              <button
+                key={index}
+                className={`w-3 h-3 rounded-full ${
+                  index === currentPage 
+                    ? "bg-primary" 
+                    : "bg-gray-300 hover:bg-gray-400"
+                }`}
+                onClick={() => jumpToPage(index)}
+                aria-label={`Go to page ${index + 1}`}
+              />
+            ))}
+            {totalPages > 10 && (
+              <div className="text-sm text-gray-500 ml-2 flex items-center">
+                + {totalPages - 10} more pages
+              </div>
+            )}
           </div>
         </div>
       </div>
