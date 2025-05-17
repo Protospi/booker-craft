@@ -188,7 +188,46 @@ export const generatePDF = async (book: Book): Promise<void> => {
     // Return a fallback image
     const getFallbackImage = (): string => {
       // SVG fallback with better visibility and styling
-      return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YwZjBmMCIgc3Ryb2tlPSIjZDBkMGQwIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1MCUiIHk9IjQ1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjU1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UaGlzIGltYWdlIGNvdWxkIG5vdCBiZSBsb2FkZWQgZHVlIHRvIENPUlMgcmVzdHJpY3Rpb25zPC90ZXh0PjwvY3ZnPg==';
+      return 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjQwMCIgZmlsbD0iI2YwZjBmMCIgc3Ryb2tlPSIjZDBkMGQwIiBzdHJva2Utd2lkdGg9IjIiLz48dGV4dCB4PSI1MCUiIHk9IjQ1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjIwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjU1JSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UaGlzIGltYWdlIGNvdWxkIG5vdCBiZSBsb2FkZWQgZHVlIHRvIENPUlMgcmVzdHJpY3Rpb25zPC90ZXh0PjwvY3ZnPg==';
+    };
+
+    // Helper function to preserve image aspect ratio
+    const preserveImageAspectRatio = async (imageUrl: string, containerWidth: number, maxHeight: number): Promise<{ width: number, height: number }> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // Calculate aspect ratio
+          const aspectRatio = img.width / img.height;
+          
+          // Set width to container width
+          const width = containerWidth;
+          
+          // Calculate height based on aspect ratio
+          let height = width / aspectRatio;
+          
+          // If height exceeds max height, adjust width and height
+          if (height > maxHeight) {
+            height = maxHeight;
+            // Recalculate width based on max height and aspect ratio
+            const adjustedWidth = height * aspectRatio;
+            resolve({ width: adjustedWidth, height });
+          } else {
+            resolve({ width, height });
+          }
+        };
+        
+        img.onerror = () => {
+          // Default dimensions if image fails to load
+          resolve({ width: containerWidth * 0.8, height: containerWidth * 0.5 });
+        };
+        
+        // Set source after handlers
+        if (imageUrl.startsWith('data:')) {
+          img.src = imageUrl;
+        } else {
+          img.src = globalImageCache[imageUrl] || imageUrl;
+        }
+      });
     };
 
     // Pre-cache all images to prevent CORS issues during PDF generation
@@ -525,11 +564,23 @@ export const generatePDF = async (book: Book): Promise<void> => {
             figure.style.margin = '0 0 15mm 0';
             figure.style.padding = '0';
             
-            // Create image container with fixed dimensions
+            // Calculate image dimensions while preserving aspect ratio
+            // A4 paper width is 210mm, with 20mm padding on each side = 170mm content width
+            // Convert to pixels for calculation (approximately)
+            const containerWidthPx = 800; // Representing ~170mm content width
+            const maxHeightPx = 400; // Maximum height for the image (approximately)
+            const dimensions = await preserveImageAspectRatio(
+              chapterImgBase64 || page.imageUrl, 
+              containerWidthPx, 
+              maxHeightPx
+            );
+            
+            // Create image container with calculated dimensions 
             const imageContainer = document.createElement('div');
-            imageContainer.style.width = '100%';
-            imageContainer.style.height = '50mm';
+            imageContainer.style.width = `${dimensions.width}px`;
+            imageContainer.style.height = `${dimensions.height}px`;
             imageContainer.style.position = 'relative';
+            imageContainer.style.margin = '0 auto'; // Center the image horizontally
             imageContainer.style.overflow = 'hidden';
             imageContainer.style.backgroundColor = '#f8f8f8'; // Light background to show where image should be
             imageContainer.style.border = '1px solid #eaeaea';
@@ -540,7 +591,7 @@ export const generatePDF = async (book: Book): Promise<void> => {
             img.alt = `Image for Chapter ${chapter.number}`;
             img.style.width = '100%';
             img.style.height = '100%';
-            img.style.objectFit = 'cover';
+            img.style.objectFit = 'contain'; // Changed from 'cover' to 'contain' to preserve aspect ratio
             img.style.objectPosition = 'center';
             img.style.display = 'block';
             
