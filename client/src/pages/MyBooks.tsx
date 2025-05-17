@@ -3,19 +3,31 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, ChevronLeft, List, Download } from "lucide-react";
+import { Eye, ChevronLeft, List, Download, Trash2, AlertTriangle } from "lucide-react";
 import { useCallback, useState, useEffect } from "react";
 import { BookViewer } from "@/components/BookViewer";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Book } from "@shared/schema";
 import { generatePDF } from "@/lib/pdf";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function MyBooks() {
-  const { savedBooks } = useBooks();
+  const { savedBooks, removeBook } = useBooks();
   const { t } = useLanguage();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [, setLocation] = useLocation();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
   
   // Check if we need to show a specific book (after generation)
   useEffect(() => {
@@ -55,6 +67,21 @@ export default function MyBooks() {
       }
     }
   }, [selectedBook]);
+  
+  // Function to open delete confirmation dialog
+  const handleDeleteClick = useCallback((book: Book) => {
+    setBookToDelete(book);
+    setDeleteDialogOpen(true);
+  }, []);
+  
+  // Function to confirm book deletion
+  const confirmDelete = useCallback(() => {
+    if (bookToDelete) {
+      removeBook(bookToDelete.cover.title);
+      setDeleteDialogOpen(false);
+      setBookToDelete(null);
+    }
+  }, [bookToDelete, removeBook]);
 
   if (selectedBook) {
     return (
@@ -210,6 +237,15 @@ export default function MyBooks() {
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50 w-full"
+                      onClick={() => handleDeleteClick(book)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -217,6 +253,31 @@ export default function MyBooks() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
+              Delete Book
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{bookToDelete?.cover.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
     </div>
   );
 }
