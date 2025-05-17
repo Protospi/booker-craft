@@ -82,7 +82,7 @@ export const generatePDF = async (book: Book): Promise<void> => {
     coverPage.style.backgroundColor = '#1a2b3c';
     coverPage.style.overflow = 'hidden';
     
-    // Cover background
+    // Cover background with image
     if (book.cover.imageUrl) {
       const coverBg = document.createElement('div');
       coverBg.style.position = 'absolute';
@@ -90,10 +90,40 @@ export const generatePDF = async (book: Book): Promise<void> => {
       coverBg.style.left = '0';
       coverBg.style.width = '100%';
       coverBg.style.height = '100%';
-      coverBg.style.backgroundImage = `url(${book.cover.imageUrl})`;
-      coverBg.style.backgroundSize = 'cover';
-      coverBg.style.backgroundPosition = 'center';
-      coverBg.style.opacity = '0.6';
+      coverBg.style.overflow = 'hidden';
+      
+      // Use an actual img element for better compatibility
+      const coverImg = document.createElement('img');
+      coverImg.src = book.cover.imageUrl;
+      coverImg.alt = "Book cover";
+      coverImg.style.width = '100%';
+      coverImg.style.height = '100%';
+      coverImg.style.objectFit = 'cover';
+      coverImg.style.objectPosition = 'center';
+      coverImg.style.opacity = '0.6';
+      coverImg.crossOrigin = 'anonymous';
+      
+      // Wait for image to load before proceeding
+      updateStatus('Loading cover image...');
+      await new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.warn(`Cover image load timeout: ${book.cover.imageUrl}`);
+          resolve(null);
+        }, 5000);
+        
+        coverImg.onload = () => {
+          clearTimeout(timeout);
+          resolve(null);
+        };
+        
+        coverImg.onerror = () => {
+          clearTimeout(timeout);
+          console.error(`Failed to load cover image: ${book.cover.imageUrl}`);
+          resolve(null);
+        };
+      });
+      
+      coverBg.appendChild(coverImg);
       coverPage.appendChild(coverBg);
     }
     
@@ -236,32 +266,51 @@ export const generatePDF = async (book: Book): Promise<void> => {
           chapterHeader.style.marginBottom = '10mm';
           chapterPage.appendChild(chapterHeader);
           
-          // Chapter image if available - using similar approach as cover image
+          // Chapter image if available - using a more direct approach
           if (page.imageUrl) {
+            // Use a div with explicit dimensions
             const imageContainer = document.createElement('div');
             imageContainer.style.width = '100%';
             imageContainer.style.height = '50mm';
             imageContainer.style.marginBottom = '10mm';
-            imageContainer.style.borderRadius = '3px';
-            imageContainer.style.overflow = 'hidden';
             imageContainer.style.position = 'relative';
-            imageContainer.style.backgroundColor = '#f0f0f0';
+            imageContainer.style.overflow = 'hidden';
             
-            // Background div with image
-            const imgBackground = document.createElement('div');
-            imgBackground.style.position = 'absolute';
-            imgBackground.style.top = '0';
-            imgBackground.style.left = '0';
-            imgBackground.style.width = '100%';
-            imgBackground.style.height = '100%';
-            imgBackground.style.backgroundImage = `url(${page.imageUrl})`;
-            imgBackground.style.backgroundSize = 'cover';
-            imgBackground.style.backgroundPosition = 'center';
+            // Instead of background-image, use an actual img element
+            const img = document.createElement('img');
+            img.src = page.imageUrl;
+            img.alt = `Image for Chapter ${chapter.number}`;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.objectPosition = 'center';
+            img.style.display = 'block';
             
-            // Add a thin border for better appearance
-            imageContainer.style.border = '1px solid #ddd';
+            // Set crossOrigin for better image handling
+            img.crossOrigin = 'anonymous';
             
-            imageContainer.appendChild(imgBackground);
+            // Force image to be loaded before continuing
+            updateStatus(`Loading image for Chapter ${chapter.number}...`);
+            await new Promise((resolve) => {
+              // Set a timeout in case the image doesn't load
+              const timeout = setTimeout(() => {
+                console.warn(`Image load timeout for ${page.imageUrl}`);
+                resolve(null);
+              }, 5000);
+              
+              img.onload = () => {
+                clearTimeout(timeout);
+                resolve(null);
+              };
+              
+              img.onerror = () => {
+                clearTimeout(timeout);
+                console.error(`Failed to load image: ${page.imageUrl}`);
+                resolve(null);
+              };
+            });
+            
+            imageContainer.appendChild(img);
             chapterPage.appendChild(imageContainer);
           }
         }
