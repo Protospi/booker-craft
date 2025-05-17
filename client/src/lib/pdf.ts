@@ -1,202 +1,236 @@
 import { Book } from "@shared/schema";
-import { jsPDF } from "jspdf";
 import { toast } from "@/hooks/use-toast";
-
-// Helper function to add an image to the PDF
-const addImageToPdf = async (doc: jsPDF, imageUrl: string, x: number, y: number, width: number, height: number): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    try {
-      // Handle both http/https and data URLs
-      if (!imageUrl) {
-        console.warn("No image URL provided");
-        resolve();
-        return;
-      }
-      
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      
-      // Set a timeout for image loading
-      const timeoutId = setTimeout(() => {
-        console.warn("Image load timeout:", imageUrl);
-        img.src = ""; // Cancel loading
-        resolve(); // Continue without image
-      }, 5000); // 5 second timeout
-      
-      img.onerror = (err) => {
-        clearTimeout(timeoutId);
-        console.error("Error loading image:", err);
-        toast({
-          title: "Image Loading Issue",
-          description: "Some images could not be included in the PDF. The document will still be generated.",
-          variant: "destructive",
-        });
-        resolve(); // Continue without the image
-      };
-      
-      img.onload = () => {
-        clearTimeout(timeoutId);
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.min(img.width, 2000);
-          canvas.height = Math.min(img.height, 2000);
-          
-          const ctx = canvas.getContext("2d");
-          if (!ctx) {
-            resolve(); // Continue without image
-            return;
-          }
-          
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          const imgData = canvas.toDataURL("image/jpeg", 0.8);
-          
-          doc.addImage(imgData, "JPEG", x, y, width, height);
-          resolve();
-        } catch (err) {
-          console.error("Error processing loaded image:", err);
-          resolve(); // Continue without the image
-        }
-      };
-      
-      img.src = imageUrl;
-    } catch (err) {
-      console.error("Error in addImageToPdf:", err);
-      resolve(); // Continue without the image
-    }
-  });
-};
+import html2pdf from 'html2pdf.js';
 
 export const generatePDF = async (book: Book): Promise<void> => {
   try {
-    // Create a new PDF document (A4 format)
-    const doc = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4"
-    });
-    
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 20; // margin in mm
-    const contentWidth = pageWidth - (margin * 2);
+    // Create an HTML representation of the book
+    const container = document.createElement('div');
+    container.className = 'pdf-container';
+    container.style.fontFamily = 'Arial, sans-serif';
     
     // Add cover page
+    const coverPage = document.createElement('div');
+    coverPage.style.position = 'relative';
+    coverPage.style.height = '11in';
+    coverPage.style.width = '8.5in';
+    coverPage.style.overflow = 'hidden';
+    coverPage.style.backgroundColor = '#1a2b3c';
+    coverPage.style.color = 'white';
+    coverPage.style.display = 'flex';
+    coverPage.style.flexDirection = 'column';
+    coverPage.style.alignItems = 'center';
+    coverPage.style.justifyContent = 'space-between';
+    coverPage.style.padding = '2cm';
+    coverPage.style.boxSizing = 'border-box';
+    
+    // Background image with overlay
     if (book.cover.imageUrl) {
-      try {
-        await addImageToPdf(doc, book.cover.imageUrl, 0, 0, pageWidth, pageHeight);
-        
-        // Add semi-transparent overlay for better text visibility
-        doc.setFillColor(0, 0, 0);
-        doc.setDrawColor(0, 0, 0);
-        // Create semi-transparent overlay
-        doc.setFillColor(20, 20, 20);
-        doc.rect(0, 0, pageWidth, pageHeight, "F");
-      } catch (err) {
-        console.error("Error adding cover image:", err);
-      }
+      coverPage.style.backgroundImage = `url(${book.cover.imageUrl})`;
+      coverPage.style.backgroundSize = 'cover';
+      coverPage.style.backgroundPosition = 'center';
+      
+      // Overlay for better text visibility
+      const overlay = document.createElement('div');
+      overlay.style.position = 'absolute';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      overlay.style.zIndex = '1';
+      coverPage.appendChild(overlay);
     }
     
-    // Set font styles for cover
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.text(book.cover.title, pageWidth / 2, 60, { align: "center" });
+    // Book title and subtitle
+    const titleContainer = document.createElement('div');
+    titleContainer.style.position = 'relative';
+    titleContainer.style.zIndex = '2';
+    titleContainer.style.textAlign = 'center';
+    titleContainer.style.marginTop = '3cm';
     
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "italic");
-    doc.text(book.cover.subtitle, pageWidth / 2, 80, { align: "center" });
+    const titleElement = document.createElement('h1');
+    titleElement.style.fontSize = '32px';
+    titleElement.style.marginBottom = '0.5cm';
+    titleElement.style.fontWeight = 'bold';
+    titleElement.textContent = book.cover.title;
+    titleContainer.appendChild(titleElement);
     
-    // Add central image if available
+    const subtitleElement = document.createElement('h2');
+    subtitleElement.style.fontSize = '20px';
+    subtitleElement.style.fontStyle = 'italic';
+    subtitleElement.style.fontWeight = 'normal';
+    subtitleElement.style.color = '#ccc';
+    subtitleElement.textContent = book.cover.subtitle;
+    titleContainer.appendChild(subtitleElement);
+    
+    coverPage.appendChild(titleContainer);
+    
+    // Central image if available
     if (book.cover.centralImageUrl) {
-      try {
-        await addImageToPdf(doc, book.cover.centralImageUrl, pageWidth / 2 - 30, 100, 60, 60);
-      } catch (err) {
-        console.error("Error adding central cover image:", err);
-      }
+      const centralImageContainer = document.createElement('div');
+      centralImageContainer.style.position = 'relative';
+      centralImageContainer.style.zIndex = '2';
+      centralImageContainer.style.textAlign = 'center';
+      centralImageContainer.style.margin = '2cm 0';
+      
+      const centralImage = document.createElement('img');
+      centralImage.src = book.cover.centralImageUrl;
+      centralImage.style.width = '5cm';
+      centralImage.style.height = '5cm';
+      centralImage.style.borderRadius = '50%';
+      centralImage.style.objectFit = 'cover';
+      centralImage.style.border = '5px solid rgba(255, 255, 255, 0.3)';
+      
+      centralImageContainer.appendChild(centralImage);
+      coverPage.appendChild(centralImageContainer);
     }
     
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text("Generated by AI", pageWidth / 2, pageHeight - 40, { align: "center" });
-    doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long" }), pageWidth / 2, pageHeight - 30, { align: "center" });
+    // Footer information
+    const footerContainer = document.createElement('div');
+    footerContainer.style.position = 'relative';
+    footerContainer.style.zIndex = '2';
+    footerContainer.style.textAlign = 'center';
+    footerContainer.style.marginBottom = '2cm';
+    
+    const generatedText = document.createElement('p');
+    generatedText.textContent = 'Generated by AI';
+    generatedText.style.fontSize = '14px';
+    generatedText.style.color = '#aaa';
+    footerContainer.appendChild(generatedText);
+    
+    const dateText = document.createElement('p');
+    dateText.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    dateText.style.fontSize = '16px';
+    dateText.style.marginTop = '0.5cm';
+    footerContainer.appendChild(dateText);
+    
+    coverPage.appendChild(footerContainer);
+    container.appendChild(coverPage);
     
     // Add table of contents
-    doc.addPage();
-    doc.setTextColor(0, 0, 0); // Reset text color to black
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("Table of Contents", margin, margin);
+    const tocPage = document.createElement('div');
+    tocPage.style.height = '11in';
+    tocPage.style.width = '8.5in';
+    tocPage.style.padding = '2cm';
+    tocPage.style.boxSizing = 'border-box';
+    tocPage.style.backgroundColor = 'white';
+    tocPage.style.pageBreakBefore = 'always';
     
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
+    const tocTitle = document.createElement('h1');
+    tocTitle.textContent = 'Table of Contents';
+    tocTitle.style.fontSize = '24px';
+    tocTitle.style.marginBottom = '1cm';
+    tocTitle.style.paddingBottom = '0.5cm';
+    tocTitle.style.borderBottom = '1px solid #eee';
+    tocPage.appendChild(tocTitle);
     
-    let yPosition = 40;
-    book.chapters.forEach((chapter) => {
-      doc.text(`Chapter ${chapter.number}: ${chapter.title}`, margin, yPosition);
-      yPosition += 10;
+    const tocList = document.createElement('ul');
+    tocList.style.listStyleType = 'none';
+    tocList.style.padding = '0';
+    tocList.style.margin = '0';
+    
+    book.chapters.forEach(chapter => {
+      const listItem = document.createElement('li');
+      listItem.style.marginBottom = '0.8cm';
+      listItem.style.position = 'relative';
+      listItem.style.display = 'flex';
+      listItem.style.justifyContent = 'space-between';
+      listItem.style.borderBottom = '1px dotted #ccc';
+      listItem.style.paddingBottom = '0.3cm';
       
-      // Add dotted line
-      if (yPosition < pageHeight - margin) {
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.1);
-        doc.line(margin, yPosition - 5, pageWidth - margin, yPosition - 5);
-      }
+      const chapterLabel = document.createElement('span');
+      chapterLabel.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
+      chapterLabel.style.fontWeight = 'normal';
+      chapterLabel.style.fontSize = '16px';
+      listItem.appendChild(chapterLabel);
+      
+      tocList.appendChild(listItem);
     });
     
-    // Process all chapters and their pages
-    for (let c = 0; c < book.chapters.length; c++) {
-      const chapter = book.chapters[c];
-      
-      for (let p = 0; p < chapter.pages.length; p++) {
-        const page = chapter.pages[p];
-        doc.addPage();
-        let currentY = margin;
+    tocPage.appendChild(tocList);
+    container.appendChild(tocPage);
+    
+    // Add chapters
+    book.chapters.forEach((chapter, chapterIndex) => {
+      chapter.pages.forEach((page, pageIndex) => {
+        const contentPage = document.createElement('div');
+        contentPage.style.height = '11in';
+        contentPage.style.width = '8.5in';
+        contentPage.style.padding = '2cm';
+        contentPage.style.boxSizing = 'border-box';
+        contentPage.style.backgroundColor = 'white';
+        contentPage.style.pageBreakBefore = 'always';
         
-        // Add chapter title and potentially image
+        // Add chapter title if it's the start of a chapter
         if (page.isChapterStart) {
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(18);
-          doc.text(`Chapter ${chapter.number}: ${chapter.title}`, margin, currentY);
-          currentY += 10;
-          
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(12);
+          const chapterTitle = document.createElement('h2');
+          chapterTitle.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
+          chapterTitle.style.fontSize = '20px';
+          chapterTitle.style.marginBottom = '1cm';
+          contentPage.appendChild(chapterTitle);
           
           // Add chapter image if available
           if (page.imageUrl) {
-            try {
-              // Add the chapter image
-              const imageHeight = 50; // Height in mm
-              currentY += 10;
-              await addImageToPdf(doc, page.imageUrl, margin, currentY, contentWidth, imageHeight);
-              currentY += imageHeight + 10; // Move Y position past the image + some padding
-            } catch (err) {
-              console.error("Error adding chapter image:", err);
-            }
+            const chapterImage = document.createElement('img');
+            chapterImage.src = page.imageUrl;
+            chapterImage.style.width = '100%';
+            chapterImage.style.maxHeight = '5cm';
+            chapterImage.style.objectFit = 'cover';
+            chapterImage.style.marginBottom = '1cm';
+            chapterImage.style.borderRadius = '5px';
+            contentPage.appendChild(chapterImage);
           }
         }
         
-        // Convert HTML content to plain text
-        const tempElement = document.createElement("div");
-        tempElement.innerHTML = page.content;
-        const textContent = tempElement.textContent || tempElement.innerText;
+        // Add page content
+        const contentDiv = document.createElement('div');
+        contentDiv.innerHTML = page.content;
+        contentDiv.style.fontSize = '12pt';
+        contentDiv.style.lineHeight = '1.5';
+        contentPage.appendChild(contentDiv);
         
-        // Split text into lines to fit in PDF
-        const textLines = doc.splitTextToSize(textContent, contentWidth);
-        
-        // Add text with word wrapping
-        const textHeight = doc.getTextDimensions(textLines).h;
-        if (currentY + textHeight > pageHeight - margin) {
-          // If text would overflow, add a new page
-          doc.addPage();
-          currentY = margin;
-        }
-        doc.text(textLines, margin, currentY);
-      }
-    }
+        container.appendChild(contentPage);
+      });
+    });
     
-    // Save the PDF
-    doc.save(`${book.cover.title.replace(/\s+/g, "_")}.pdf`);
+    // Temporary add to document for HTML2PDF to work with it
+    document.body.appendChild(container);
+    
+    // Configure pdf options
+    const opt = {
+      margin: [0, 0, 0, 0],
+      filename: `${book.cover.title.replace(/\s+/g, "_")}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { 
+        scale: 2, 
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+      },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    
+    // Generate and save PDF
+    html2pdf().from(container).set(opt).save().then(() => {
+      // Clean up - remove the container from document
+      document.body.removeChild(container);
+      toast({
+        title: "PDF Generated Successfully",
+        description: "Your book has been downloaded as a PDF file.",
+      });
+    }).catch((error) => {
+      console.error("Error in html2pdf:", error);
+      // Clean up even on error
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
+      toast({
+        title: "PDF Generation Failed",
+        description: "There was an error creating your PDF. Please try again.",
+        variant: "destructive",
+      });
+    });
     
   } catch (error) {
     console.error("Error generating PDF:", error);
