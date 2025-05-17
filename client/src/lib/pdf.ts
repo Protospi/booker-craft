@@ -6,35 +6,56 @@ import { toast } from "@/hooks/use-toast";
 const addImageToPdf = async (doc: jsPDF, imageUrl: string, x: number, y: number, width: number, height: number): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
+      // Handle both http/https and data URLs
+      if (!imageUrl) {
+        console.warn("No image URL provided");
+        resolve();
+        return;
+      }
+      
       const img = new Image();
       img.crossOrigin = "Anonymous";
       
+      // Set a timeout for image loading
+      const timeoutId = setTimeout(() => {
+        console.warn("Image load timeout:", imageUrl);
+        img.src = ""; // Cancel loading
+        resolve(); // Continue without image
+      }, 5000); // 5 second timeout
+      
+      img.onerror = (err) => {
+        clearTimeout(timeoutId);
+        console.error("Error loading image:", err);
+        toast({
+          title: "Image Loading Issue",
+          description: "Some images could not be included in the PDF. The document will still be generated.",
+          variant: "destructive",
+        });
+        resolve(); // Continue without the image
+      };
+      
       img.onload = () => {
+        clearTimeout(timeoutId);
         try {
           const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
+          canvas.width = Math.min(img.width, 2000);
+          canvas.height = Math.min(img.height, 2000);
           
           const ctx = canvas.getContext("2d");
           if (!ctx) {
-            reject(new Error("Could not get canvas context"));
+            resolve(); // Continue without image
             return;
           }
           
-          ctx.drawImage(img, 0, 0);
-          const imgData = canvas.toDataURL("image/jpeg");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const imgData = canvas.toDataURL("image/jpeg", 0.8);
           
           doc.addImage(imgData, "JPEG", x, y, width, height);
           resolve();
         } catch (err) {
           console.error("Error processing loaded image:", err);
-          resolve(); // Continue without the image rather than rejecting
+          resolve(); // Continue without the image
         }
-      };
-      
-      img.onerror = (err) => {
-        console.error("Error loading image:", err);
-        resolve(); // Continue without the image
       };
       
       img.src = imageUrl;
