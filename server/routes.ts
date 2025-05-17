@@ -9,8 +9,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Main book generation endpoint
   app.post("/api/books/generate", async (req, res) => {
     try {
+      // Extract the API key from the request headers
+      const apiKey = req.headers['x-api-key'] as string;
+      
+      // Parse the book parameters
       const bookParams = bookParamsSchema.parse(req.body);
-      const book = await generateBook(bookParams);
+      
+      // Add the API key to the parameters for use in OpenAI calls
+      const paramsWithApiKey = { ...bookParams, apiKey };
+      
+      // Generate the book with the API key
+      const book = await generateBook(paramsWithApiKey);
       res.json(book);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -26,7 +35,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/books/skeleton", async (req, res) => {
     try {
       const { theme, numChapters, language } = req.body;
-      const skeleton = await generateBookSkeleton(theme, numChapters, language);
+      const apiKey = req.headers['x-api-key'] as string;
+      const skeleton = await generateBookSkeleton(theme, numChapters, language, apiKey);
       res.json(skeleton);
     } catch (error) {
       console.error("Skeleton generation error:", error);
@@ -38,12 +48,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/books/chapter", async (req, res) => {
     try {
       const { theme, chapterTitle, chapterNumber, totalChapters, language } = req.body;
+      const apiKey = req.headers['x-api-key'] as string;
       const chapter = await generateChapterContent(
         theme, 
         chapterTitle, 
         chapterNumber, 
         totalChapters, 
-        language
+        language,
+        apiKey
       );
       res.json(chapter);
     } catch (error) {
@@ -56,7 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/books/image", async (req, res) => {
     try {
       const { prompt } = req.body;
-      const imageUrl = await generateImage(prompt);
+      const apiKey = req.headers['x-api-key'] as string;
+      const imageUrl = await generateImage(prompt, apiKey);
       res.json({ url: imageUrl });
     } catch (error) {
       console.error("Image generation error:", error);

@@ -1,4 +1,4 @@
-import { Book, ChapterContent } from "@shared/schema";
+import { Book } from "@shared/schema";
 
 export type GenerateBookSkeletonResponse = {
   title: string;
@@ -18,15 +18,30 @@ export type GenerateImageResponse = {
   url: string;
 };
 
+// Get the user's API key from localStorage
+const getApiKey = (): string | null => {
+  return localStorage.getItem('openai-api-key');
+};
+
 // These functions make API calls to our backend which will handle the OpenAI API calls
 export const generateBookSkeleton = async (
   theme: string,
   numChapters: number,
   language: string
 ): Promise<GenerateBookSkeletonResponse> => {
+  const apiKey = getApiKey();
+  const headers: Record<string, string> = { 
+    "Content-Type": "application/json"
+  };
+  
+  // Add the API key to headers if available
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+  
   const response = await fetch("/api/books/skeleton", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: headers,
     body: JSON.stringify({ theme, numChapters, language }),
   });
 
@@ -45,9 +60,19 @@ export const generateChapterContent = async (
   totalChapters: number,
   language: string
 ): Promise<GenerateChapterContentResponse> => {
+  const apiKey = getApiKey();
+  const headers: Record<string, string> = { 
+    "Content-Type": "application/json"
+  };
+  
+  // Add the API key to headers if available
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+  
   const response = await fetch("/api/books/chapter", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: headers,
     body: JSON.stringify({
       theme,
       chapterTitle,
@@ -68,9 +93,19 @@ export const generateChapterContent = async (
 export const generateImage = async (
   prompt: string
 ): Promise<GenerateImageResponse> => {
+  const apiKey = getApiKey();
+  const headers: Record<string, string> = { 
+    "Content-Type": "application/json"
+  };
+  
+  // Add the API key to headers if available
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+  
   const response = await fetch("/api/books/image", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: headers,
     body: JSON.stringify({ prompt }),
   });
 

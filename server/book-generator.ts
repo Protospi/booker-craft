@@ -164,11 +164,14 @@ export async function generateImage(prompt: string, apiKey?: string): Promise<st
       quality: "standard"
     });
 
-    return response.data[0].url;
+    if (response?.data?.[0]?.url) {
+      return response.data[0].url;
+    } else {
+      console.error("No image URL returned");
+      return "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?&w=1024&h=1024&fit=crop";
+    }
   } catch (error: any) {
     console.error("Error generating image:", error);
-    // If image generation fails, return a placeholder URL or throw an error
-    // For simplicity, we're using an error fallback URL here
     return "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?&w=1024&h=1024&fit=crop";
   }
 }
