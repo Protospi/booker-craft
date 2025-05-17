@@ -6,13 +6,14 @@ import { useBookGeneration } from "@/hooks/use-book-generation";
 import { BookParams } from "@shared/schema";
 import { useLanguage } from "@/context/LanguageContext";
 import { useBooks } from "@/context/BookContext";
+import { useLocation } from "wouter";
 
 export default function Home() {
-  const [view, setView] = useState<"form" | "progress" | "book">("form");
+  const [view, setView] = useState<"form" | "progress">("form");
   const { saveBook } = useBooks();
+  const [, navigate] = useLocation();
   const { 
     generateBook, 
-    book, 
     progress, 
     generationSteps 
   } = useBookGeneration();
@@ -24,16 +25,13 @@ export default function Home() {
       // Save the generated book to our context
       if (generatedBook) {
         saveBook(generatedBook);
+        // Redirect to My Books page
+        navigate("/my-books");
       }
-      setView("book");
     } catch (error) {
       console.error("Error generating book:", error);
       setView("form");
     }
-  };
-
-  const handleCreateNew = () => {
-    setView("form");
   };
 
   return (
@@ -46,13 +44,6 @@ export default function Home() {
         <GenerationProgress 
           progress={progress} 
           steps={generationSteps}
-        />
-      )}
-      
-      {view === "book" && book && (
-        <BookViewer 
-          book={book} 
-          onCreateNew={handleCreateNew} 
         />
       )}
     </>

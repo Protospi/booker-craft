@@ -3,8 +3,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, ChevronLeft } from "lucide-react";
-import { useCallback, useState } from "react";
+import { Eye, ChevronLeft, List } from "lucide-react";
+import { useCallback, useState, useEffect } from "react";
 import { BookViewer } from "@/components/BookViewer";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
@@ -15,6 +15,13 @@ export default function MyBooks() {
   const { t } = useLanguage();
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [, setLocation] = useLocation();
+  
+  // Auto-select the most recently created book when navigating to this page
+  useEffect(() => {
+    if (savedBooks.length > 0 && !selectedBook) {
+      setSelectedBook(savedBooks[savedBooks.length - 1]);
+    }
+  }, [savedBooks, selectedBook]);
 
   const handleViewBook = useCallback((book: Book) => {
     setSelectedBook(book);
@@ -23,10 +30,28 @@ export default function MyBooks() {
   const handleCreateNew = useCallback(() => {
     setLocation("/");
   }, [setLocation]);
+  
+  const handleBackToList = useCallback(() => {
+    setSelectedBook(null);
+  }, []);
 
   if (selectedBook) {
     return (
-      <BookViewer book={selectedBook} onCreateNew={handleCreateNew} />
+      <div>
+        <div className="container mx-auto px-4 pt-6">
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="mb-4 flex items-center gap-1"
+            onClick={handleBackToList}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <List className="h-4 w-4 mr-1" />
+            Back to All Books
+          </Button>
+        </div>
+        <BookViewer book={selectedBook} onCreateNew={handleCreateNew} />
+      </div>
     );
   }
 
@@ -112,7 +137,13 @@ export default function MyBooks() {
                       })}
                     </Badge>
                   </div>
-                  <div className="flex justify-end">
+                  
+                  {/* Display total pages count */}
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium">Total pages:</span> {book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2} {/* +2 for cover and TOC */}
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
                     <Button 
                       variant="ghost" 
                       size="sm"
@@ -120,7 +151,7 @@ export default function MyBooks() {
                       onClick={() => handleViewBook(book)}
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      View
+                      View Book
                     </Button>
                   </div>
                 </CardContent>
