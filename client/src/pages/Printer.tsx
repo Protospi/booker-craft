@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { BookViewer } from "@/components/BookViewer";
 import { useBooks } from "@/context/BookContext";
 import { Book } from "@shared/schema";
@@ -8,12 +8,12 @@ export default function Printer() {
   const [, setLocation] = useLocation();
   const [book, setBook] = useState<Book | null>(null);
   const { savedBooks } = useBooks();
-  const path = window.location.pathname;
-  const bookTitle = path.split('/printer/')[1]?.replace(/%20/g, ' ');
+  const [, params] = useRoute<{ bookTitle: string }>("/printer/:bookTitle");
+  const bookTitle = params?.bookTitle ? decodeURIComponent(params.bookTitle) : null;
 
   useEffect(() => {
     if (bookTitle && savedBooks.length > 0) {
-      const foundBook = savedBooks.find(b => b.cover.title === decodeURIComponent(bookTitle));
+      const foundBook = savedBooks.find(b => b.cover.title === bookTitle);
       if (foundBook) {
         setBook(foundBook);
       } else {

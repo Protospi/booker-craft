@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import MyBooks from "@/pages/MyBooks";
+import Crafter from "@/pages/Crafter";
+import Printer from "@/pages/Printer";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -14,8 +16,9 @@ import { BookProvider } from "@/context/BookContext";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Crafter} />
       <Route path="/my-books" component={MyBooks} />
+      <Route path="/printer/:bookTitle" component={Printer} />
       <Route component={NotFound} />
     </Switch>
   );
