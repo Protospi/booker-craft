@@ -4,10 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
 import MyBooks from "@/pages/MyBooks";
 import Crafter from "@/pages/Crafter";
-import Printer from "@/pages/Printer";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -18,7 +16,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Crafter} />
       <Route path="/my-books" component={MyBooks} />
-      <Route path="/printer/:bookTitle" component={Printer} />
       <Route component={NotFound} />
     </Switch>
   );

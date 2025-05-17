@@ -4,23 +4,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, BookOpen } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Book } from "@shared/schema";
+import { BookViewer } from "@/components/BookViewer";
 
 export default function MyBooks() {
   const { savedBooks } = useBooks();
   const { t } = useLanguage();
   const [, setLocation] = useLocation();
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   const handleViewBook = useCallback((book: Book) => {
-    setLocation(`/printer/${encodeURIComponent(book.cover.title)}`);
-  }, [setLocation]);
+    setSelectedBook(book);
+  }, []);
 
   const handleCreateNew = useCallback(() => {
     setLocation("/");
   }, [setLocation]);
+  
+  if (selectedBook) {
+    return (
+      <BookViewer book={selectedBook} onCreateNew={handleCreateNew} />
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-10">

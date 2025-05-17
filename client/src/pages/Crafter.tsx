@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { BookCreationForm } from "@/components/BookCreationForm";
 import { GenerationProgress } from "@/components/GenerationProgress";
+import { BookViewer } from "@/components/BookViewer";
 import { useBookGeneration } from "@/hooks/use-book-generation";
 import { BookParams } from "@shared/schema";
 import { useBooks } from "@/context/BookContext";
 
 export default function Crafter() {
-  const [view, setView] = useState<"form" | "progress">("form");
-  const [, setLocation] = useLocation();
+  const [view, setView] = useState<"form" | "progress" | "book">("form");
   const { 
     generateBook, 
     book, 
@@ -23,13 +22,16 @@ export default function Crafter() {
       const generatedBook = await generateBook(params);
       if (generatedBook) {
         saveBook(generatedBook);
-        // Navigate to printer page with the book title as a param
-        setLocation(`/printer/${encodeURIComponent(generatedBook.cover.title)}`);
+        setView("book");
       }
     } catch (error) {
       console.error("Error generating book:", error);
       setView("form");
     }
+  };
+
+  const handleCreateNew = () => {
+    setView("form");
   };
 
   return (
@@ -42,6 +44,13 @@ export default function Crafter() {
         <GenerationProgress 
           progress={progress} 
           steps={generationSteps}
+        />
+      )}
+      
+      {view === "book" && book && (
+        <BookViewer 
+          book={book} 
+          onCreateNew={handleCreateNew} 
         />
       )}
     </>
