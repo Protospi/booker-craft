@@ -3,9 +3,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 export function BookExamples() {
   const examples = [
     {
-      title: "The Lost Kingdom",
-      description: "Fantasy adventure with magical creatures",
-      imageUrl: "https://images.unsplash.com/photo-1518744358564-f5cd050b1f4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=900&q=80"
+      title: "Global Cuisine Masterclass",
+      description: "40 signature recipes from around the world",
+      imageUrl: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=900&q=80"
     },
     {
       title: "Mediterranean Delights",
