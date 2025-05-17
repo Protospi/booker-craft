@@ -67,7 +67,6 @@ export const generatePDF = async (book: Book): Promise<void> => {
         // Add semi-transparent overlay for better text visibility
         doc.setFillColor(0, 0, 0);
         doc.setDrawColor(0, 0, 0);
-        doc.setFillColor(0, 0, 0);
         // Create semi-transparent overlay
         doc.setFillColor(20, 20, 20);
         doc.rect(0, 0, pageWidth, pageHeight, "F");
@@ -123,9 +122,12 @@ export const generatePDF = async (book: Book): Promise<void> => {
       }
     });
     
-    // Add chapters and their contents
-    book.chapters.forEach((chapter) => {
-      chapter.pages.forEach((page, pageIndex) => {
+    // Process all chapters and their pages
+    for (let c = 0; c < book.chapters.length; c++) {
+      const chapter = book.chapters[c];
+      
+      for (let p = 0; p < chapter.pages.length; p++) {
+        const page = chapter.pages[p];
         doc.addPage();
         let currentY = margin;
         
@@ -145,9 +147,7 @@ export const generatePDF = async (book: Book): Promise<void> => {
               // Add the chapter image
               const imageHeight = 50; // Height in mm
               currentY += 10;
-              addImageToPdf(doc, page.imageUrl, margin, currentY, contentWidth, imageHeight).then(() => {
-                // No need to await this, we'll let it process asynchronously
-              });
+              await addImageToPdf(doc, page.imageUrl, margin, currentY, contentWidth, imageHeight);
               currentY += imageHeight + 10; // Move Y position past the image + some padding
             } catch (err) {
               console.error("Error adding chapter image:", err);
@@ -171,8 +171,8 @@ export const generatePDF = async (book: Book): Promise<void> => {
           currentY = margin;
         }
         doc.text(textLines, margin, currentY);
-      });
-    });
+      }
+    }
     
     // Save the PDF
     doc.save(`${book.cover.title.replace(/\s+/g, "_")}.pdf`);
