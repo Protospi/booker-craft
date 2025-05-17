@@ -23,7 +23,7 @@ export function BookExamples() {
 
   return (
     <div className="mt-10 pt-8 border-t border-gray-200">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Example books you can create:</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">{t.bookForm.examples}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {examples.map((example, index) => (
           <div 

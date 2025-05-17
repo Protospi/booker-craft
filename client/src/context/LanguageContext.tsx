@@ -148,6 +148,7 @@ const translations: Record<Language, Translations> = {
       ageGroup: 'Faixa Etária',
       createButton: 'Criar Livro',
       backButton: 'Voltar',
+      examples: 'Exemplos de livros que você pode criar:',
     },
     bookViewer: {
       createNew: 'Criar Novo Livro',
@@ -203,6 +204,7 @@ const translations: Record<Language, Translations> = {
       ageGroup: 'Grupo de Edad',
       createButton: 'Crear Libro',
       backButton: 'Volver',
+      examples: 'Ejemplos de libros que puedes crear:',
     },
     bookViewer: {
       createNew: 'Crear Nuevo Libro',
