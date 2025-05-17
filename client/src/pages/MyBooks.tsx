@@ -3,10 +3,10 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye } from "lucide-react";
+import { Eye, ChevronLeft } from "lucide-react";
 import { useCallback, useState } from "react";
 import { BookViewer } from "@/components/BookViewer";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Book } from "@shared/schema";
 
@@ -65,7 +65,7 @@ export default function MyBooks() {
           <p className="text-gray-600 mb-6">Start creating your first AI-powered book now</p>
           <Button 
             className="bg-orange-500 hover:bg-orange-600"
-            onClick={() => navigate("/")}
+            onClick={() => setLocation("/")}
           >
             Create Your First Book
           </Button>
