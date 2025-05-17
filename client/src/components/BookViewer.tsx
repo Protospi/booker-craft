@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Page } from "@/components/ui/page";
 import { Download, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Book } from "@shared/schema";
+import { Book, BookCover, BookChapter } from "@shared/schema";
 import { motion } from "framer-motion";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { generatePDF } from "@/lib/pdf";
@@ -33,13 +33,35 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
     }
   };
 
+  const jumpToPage = (pageIndex: number) => {
+    if (pageIndex >= 0 && pageIndex < totalPages) {
+      setCurrentPage(pageIndex);
+    }
+  };
+
+  // Define page types for better type safety
+  type CoverPage = { type: 'cover'; content: BookCover };
+  type TocPage = { type: 'toc'; content: { title: string; chapters: BookChapter[] } };
+  type ChapterPage = { 
+    type: 'chapter'; 
+    content: { 
+      content: string; 
+      imageUrl?: string; 
+      isChapterStart?: boolean; 
+      chapterTitle: string; 
+      chapterNumber: number 
+    } 
+  };
+  
+  type BookPage = CoverPage | TocPage | ChapterPage;
+  
   // Flatten book pages for easy navigation
-  const flattenedPages = [
+  const flattenedPages: BookPage[] = [
     { type: 'cover', content: book.cover },
     { type: 'toc', content: { title: 'Table of Contents', chapters: book.chapters } },
     ...book.chapters.flatMap(chapter => 
       chapter.pages.map(page => ({ 
-        type: 'chapter', 
+        type: 'chapter' as const, 
         content: { ...page, chapterTitle: chapter.title, chapterNumber: chapter.number } 
       }))
     )
@@ -71,6 +93,33 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
           </div>
         </div>
         
+        {/* Book navigation controls */}
+        <div className="flex justify-between items-center mb-4 max-w-4xl mx-auto">
+          <Button 
+            variant="outline" 
+            onClick={prevPage}
+            disabled={currentPage === 0}
+            className="flex items-center gap-1"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            Previous Page
+          </Button>
+          
+          <div className="text-sm font-medium text-gray-600">
+            Page {currentPage + 1} of {totalPages}
+          </div>
+          
+          <Button 
+            variant="outline" 
+            onClick={nextPage}
+            disabled={currentPage === totalPages - 1}
+            className="flex items-center gap-1"
+          >
+            Next Page
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+
         <div className="book-container">
           <div className="flex justify-center">
             <div 
@@ -120,6 +169,10 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                           month: 'long' 
                         })}
                       </p>
+                      <div className="mt-4 bg-white/20 rounded-md p-2 text-white text-sm max-w-xs mx-auto backdrop-blur-sm">
+                        <p className="font-medium">Browse this book</p>
+                        <p>Use the navigation buttons above and below to view all pages</p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -149,7 +202,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                       <img 
                         src={currentPageData.content.imageUrl} 
                         className="w-full h-full object-cover" 
-                        alt={currentPageData.content.chapterTitle} 
+                        alt={`Chapter ${currentPageData.content.chapterNumber}`} 
                       />
                     </div>
                   )}
@@ -164,6 +217,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                     className="prose prose-slate max-w-none" 
                     dangerouslySetInnerHTML={{ __html: currentPageData.content.content }}
                   />
+                
                   
                   {/* Chapter navigation */}
                   <div className="flex justify-between mt-12 pt-6 border-t border-gray-200">
@@ -177,7 +231,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
                       Previous
                     </Button>
                     <div className="text-gray-500">
-                      Page {currentPage} of {totalPages - 1}
+                      Page {currentPage + 1} of {totalPages}
                     </div>
                     <Button 
                       variant="ghost" 
