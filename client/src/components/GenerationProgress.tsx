@@ -1,6 +1,7 @@
 import { Progress } from "@/components/ui/progress";
 import { CheckIcon, Loader2Icon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useLanguage } from "@/context/LanguageContext";
 
 type GenerationStep = {
   id: string;

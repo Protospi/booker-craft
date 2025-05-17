@@ -6,6 +6,7 @@ import { Book, BookCover, BookChapter } from "@shared/schema";
 import { motion } from "framer-motion";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { generatePDF } from "@/lib/pdf";
+import { useLanguage } from "@/context/LanguageContext";
 
 type BookViewerProps = {
   book: Book;
@@ -13,6 +14,7 @@ type BookViewerProps = {
 };
 
 export function BookViewer({ book, onCreateNew }: BookViewerProps) {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(0);
   const bookRef = useRef<HTMLDivElement>(null);
   const totalPages = book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2; // +2 for cover and TOC
@@ -58,7 +60,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
   // Flatten book pages for easy navigation
   const flattenedPages: BookPage[] = [
     { type: 'cover', content: book.cover },
-    { type: 'toc', content: { title: 'Table of Contents', chapters: book.chapters } },
+    { type: 'toc', content: { title: t.bookViewer.tableOfContents, chapters: book.chapters } },
     ...book.chapters.flatMap(chapter => 
       chapter.pages.map(page => ({ 
         type: 'chapter' as const, 
@@ -81,14 +83,14 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
               onClick={handleDownload}
             >
               <Download className="h-5 w-5 mr-2" />
-              Download PDF
+              {t.bookViewer.downloadPdf}
             </Button>
             <Button 
               variant="outline" 
               onClick={onCreateNew}
             >
               <Plus className="h-5 w-5 mr-2" />
-              Create New Book
+              {t.bookViewer.createNew}
             </Button>
           </div>
         </div>
@@ -102,7 +104,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
             className="flex items-center gap-1"
           >
             <ChevronLeft className="h-5 w-5" />
-            Previous Page
+            {t.bookViewer.previousPage}
           </Button>
           
           <div className="text-sm font-medium text-gray-600">
@@ -115,7 +117,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
             disabled={currentPage === totalPages - 1}
             className="flex items-center gap-1"
           >
-            Next Page
+            {t.bookViewer.nextPage}
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
@@ -181,7 +183,7 @@ export function BookViewer({ book, onCreateNew }: BookViewerProps) {
               {currentPageData.type === 'toc' && (
                 <div className="book-content bg-white p-6 sm:p-10">
                   <h2 className="font-serif text-2xl font-bold mb-6 pb-2 border-b border-gray-200">
-                    Table of Contents
+                    {t.bookViewer.tableOfContents}
                   </h2>
                   <ul className="space-y-3">
                     {book.chapters.map((chapter) => (
