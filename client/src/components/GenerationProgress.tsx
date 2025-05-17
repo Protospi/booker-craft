@@ -16,18 +16,20 @@ type GenerationProgressProps = {
 };
 
 export function GenerationProgress({ progress, steps }: GenerationProgressProps) {
+  const { t } = useLanguage();
+  
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Creating Your Book</h2>
+          <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">{t.generationProgress.generating}</h2>
           <p className="text-gray-600">Please wait while we generate your content...</p>
         </div>
         
         <div className="space-y-6">
           <div>
             <div className="flex justify-between text-sm font-medium mb-1">
-              <span>Overall Progress</span>
+              <span>{t.generationProgress.step}</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-4" />
@@ -78,7 +80,7 @@ export function GenerationProgress({ progress, steps }: GenerationProgressProps)
             ))}
           </div>
           
-          <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800">
+          <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-800">
             <AlertDescription className="flex items-start gap-2">
               <div className="flex-shrink-0 text-amber-400 mt-0.5">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

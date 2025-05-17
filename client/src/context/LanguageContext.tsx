@@ -33,6 +33,7 @@ export type Translations = {
     ageGroup: string;
     createButton: string;
     backButton: string;
+    examples: string;
   };
   bookViewer: {
     createNew: string;
@@ -91,6 +92,7 @@ const translations: Record<Language, Translations> = {
       ageGroup: 'Age Group',
       createButton: 'Create Book',
       backButton: 'Back',
+      examples: 'Example books you can create:',
     },
     bookViewer: {
       createNew: 'Create New Book',

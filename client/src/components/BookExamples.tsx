@@ -1,6 +1,8 @@
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useLanguage } from "@/context/LanguageContext";
 
 export function BookExamples() {
+  const { t } = useLanguage();
   const examples = [
     {
       title: "Global Cuisine Masterclass",
