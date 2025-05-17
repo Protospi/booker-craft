@@ -1,239 +1,296 @@
 import { Book } from "@shared/schema";
 import { toast } from "@/hooks/use-toast";
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from "jspdf";
+import html2canvas from 'html2canvas';
 
 export const generatePDF = async (book: Book): Promise<void> => {
   try {
-    // Create an HTML representation of the book
-    const container = document.createElement('div');
-    container.className = 'pdf-container';
-    container.style.fontFamily = 'Arial, sans-serif';
+    // Container for the entire book
+    const bookContainer = document.createElement('div');
+    bookContainer.id = 'book-pdf-container';
+    bookContainer.style.position = 'fixed';
+    bookContainer.style.left = '-9999px';
+    bookContainer.style.top = '0';
+    bookContainer.style.width = '210mm'; // A4 width
+    bookContainer.style.backgroundColor = 'white';
+    bookContainer.style.zIndex = '-1000';
+    document.body.appendChild(bookContainer);
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    let currentPage = 1;
     
-    // Add cover page
+    // Add a status indicator
+    const statusIndicator = document.createElement('div');
+    statusIndicator.style.position = 'fixed';
+    statusIndicator.style.top = '50%';
+    statusIndicator.style.left = '50%';
+    statusIndicator.style.transform = 'translate(-50%, -50%)';
+    statusIndicator.style.padding = '15px 20px';
+    statusIndicator.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    statusIndicator.style.color = 'white';
+    statusIndicator.style.borderRadius = '5px';
+    statusIndicator.style.zIndex = '9999';
+    statusIndicator.style.fontFamily = 'Arial, sans-serif';
+    statusIndicator.textContent = 'Generating PDF... Please wait.';
+    document.body.appendChild(statusIndicator);
+
+    // Function to update status
+    const updateStatus = (message: string) => {
+      statusIndicator.textContent = message;
+    };
+
+    // Function to render a page and add it to the PDF
+    const renderPageToPdf = async (element: HTMLElement, isFirstPage: boolean = false) => {
+      try {
+        updateStatus(`Processing page ${currentPage}...`);
+        
+        // Set the element as the content of our container
+        bookContainer.innerHTML = '';
+        bookContainer.appendChild(element);
+        
+        // Render the element to canvas
+        const canvas = await html2canvas(element, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true, // Enable CORS for images
+          allowTaint: true,
+          logging: false,
+          backgroundColor: element.style.backgroundColor || '#ffffff'
+        });
+        
+        // Calculate dimensions to fit page
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        
+        if (!isFirstPage) {
+          pdf.addPage();
+        }
+        
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+        currentPage++;
+      } catch (err) {
+        console.error("Error rendering page to PDF:", err);
+      }
+    };
+
+    // GENERATE COVER PAGE
+    updateStatus('Creating cover page...');
     const coverPage = document.createElement('div');
+    coverPage.style.width = '210mm';
+    coverPage.style.height = '297mm';
     coverPage.style.position = 'relative';
-    coverPage.style.height = '11in';
-    coverPage.style.width = '8.5in';
-    coverPage.style.overflow = 'hidden';
     coverPage.style.backgroundColor = '#1a2b3c';
-    coverPage.style.color = 'white';
-    coverPage.style.display = 'flex';
-    coverPage.style.flexDirection = 'column';
-    coverPage.style.alignItems = 'center';
-    coverPage.style.justifyContent = 'space-between';
-    coverPage.style.padding = '2cm';
-    coverPage.style.boxSizing = 'border-box';
+    coverPage.style.overflow = 'hidden';
     
-    // Background image with overlay
+    // Cover background
     if (book.cover.imageUrl) {
-      coverPage.style.backgroundImage = `url(${book.cover.imageUrl})`;
-      coverPage.style.backgroundSize = 'cover';
-      coverPage.style.backgroundPosition = 'center';
-      
-      // Overlay for better text visibility
-      const overlay = document.createElement('div');
-      overlay.style.position = 'absolute';
-      overlay.style.top = '0';
-      overlay.style.left = '0';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      overlay.style.zIndex = '1';
-      coverPage.appendChild(overlay);
+      const coverBg = document.createElement('div');
+      coverBg.style.position = 'absolute';
+      coverBg.style.top = '0';
+      coverBg.style.left = '0';
+      coverBg.style.width = '100%';
+      coverBg.style.height = '100%';
+      coverBg.style.backgroundImage = `url(${book.cover.imageUrl})`;
+      coverBg.style.backgroundSize = 'cover';
+      coverBg.style.backgroundPosition = 'center';
+      coverBg.style.opacity = '0.6';
+      coverPage.appendChild(coverBg);
     }
     
-    // Book title and subtitle
-    const titleContainer = document.createElement('div');
-    titleContainer.style.position = 'relative';
-    titleContainer.style.zIndex = '2';
-    titleContainer.style.textAlign = 'center';
-    titleContainer.style.marginTop = '3cm';
+    // Overlay for readability
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    coverPage.appendChild(overlay);
     
-    const titleElement = document.createElement('h1');
-    titleElement.style.fontSize = '32px';
-    titleElement.style.marginBottom = '0.5cm';
-    titleElement.style.fontWeight = 'bold';
-    titleElement.textContent = book.cover.title;
-    titleContainer.appendChild(titleElement);
+    // Cover content container
+    const coverContent = document.createElement('div');
+    coverContent.style.position = 'relative';
+    coverContent.style.height = '100%';
+    coverContent.style.width = '100%';
+    coverContent.style.display = 'flex';
+    coverContent.style.flexDirection = 'column';
+    coverContent.style.justifyContent = 'space-between';
+    coverContent.style.alignItems = 'center';
+    coverContent.style.padding = '40mm 20mm';
+    coverContent.style.boxSizing = 'border-box';
+    coverContent.style.color = 'white';
+    coverContent.style.textAlign = 'center';
     
-    const subtitleElement = document.createElement('h2');
-    subtitleElement.style.fontSize = '20px';
-    subtitleElement.style.fontStyle = 'italic';
-    subtitleElement.style.fontWeight = 'normal';
-    subtitleElement.style.color = '#ccc';
-    subtitleElement.textContent = book.cover.subtitle;
-    titleContainer.appendChild(subtitleElement);
+    // Title
+    const title = document.createElement('h1');
+    title.textContent = book.cover.title;
+    title.style.fontSize = '32px';
+    title.style.fontWeight = 'bold';
+    title.style.marginBottom = '10mm';
     
-    coverPage.appendChild(titleContainer);
+    // Subtitle
+    const subtitle = document.createElement('h2');
+    subtitle.textContent = book.cover.subtitle;
+    subtitle.style.fontSize = '20px';
+    subtitle.style.fontStyle = 'italic';
+    subtitle.style.fontWeight = 'normal';
+    subtitle.style.color = '#cccccc';
+    
+    const titleWrapper = document.createElement('div');
+    titleWrapper.appendChild(title);
+    titleWrapper.appendChild(subtitle);
+    coverContent.appendChild(titleWrapper);
     
     // Central image if available
     if (book.cover.centralImageUrl) {
-      const centralImageContainer = document.createElement('div');
-      centralImageContainer.style.position = 'relative';
-      centralImageContainer.style.zIndex = '2';
-      centralImageContainer.style.textAlign = 'center';
-      centralImageContainer.style.margin = '2cm 0';
-      
-      const centralImage = document.createElement('img');
-      centralImage.src = book.cover.centralImageUrl;
-      centralImage.style.width = '5cm';
-      centralImage.style.height = '5cm';
-      centralImage.style.borderRadius = '50%';
-      centralImage.style.objectFit = 'cover';
-      centralImage.style.border = '5px solid rgba(255, 255, 255, 0.3)';
-      
-      centralImageContainer.appendChild(centralImage);
-      coverPage.appendChild(centralImageContainer);
+      const centralImg = document.createElement('img');
+      centralImg.src = book.cover.centralImageUrl;
+      centralImg.style.width = '120px';
+      centralImg.style.height = '120px';
+      centralImg.style.objectFit = 'cover';
+      centralImg.style.borderRadius = '50%';
+      centralImg.style.border = '5px solid rgba(255, 255, 255, 0.3)';
+      centralImg.style.marginTop = '20mm';
+      centralImg.style.marginBottom = '20mm';
+      centralImg.crossOrigin = 'anonymous';
+      coverContent.appendChild(centralImg);
     }
     
-    // Footer information
-    const footerContainer = document.createElement('div');
-    footerContainer.style.position = 'relative';
-    footerContainer.style.zIndex = '2';
-    footerContainer.style.textAlign = 'center';
-    footerContainer.style.marginBottom = '2cm';
+    // Footer
+    const footer = document.createElement('div');
+    footer.innerHTML = `<p style="margin-bottom: 5mm;">Generated by AI</p>
+                        <p>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>`;
+    coverContent.appendChild(footer);
     
-    const generatedText = document.createElement('p');
-    generatedText.textContent = 'Generated by AI';
-    generatedText.style.fontSize = '14px';
-    generatedText.style.color = '#aaa';
-    footerContainer.appendChild(generatedText);
+    coverPage.appendChild(coverContent);
     
-    const dateText = document.createElement('p');
-    dateText.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-    dateText.style.fontSize = '16px';
-    dateText.style.marginTop = '0.5cm';
-    footerContainer.appendChild(dateText);
+    // Add cover page to PDF
+    await renderPageToPdf(coverPage, true);
     
-    coverPage.appendChild(footerContainer);
-    container.appendChild(coverPage);
-    
-    // Add table of contents
+    // GENERATE TABLE OF CONTENTS
+    updateStatus('Creating table of contents...');
     const tocPage = document.createElement('div');
-    tocPage.style.height = '11in';
-    tocPage.style.width = '8.5in';
-    tocPage.style.padding = '2cm';
+    tocPage.style.width = '210mm';
+    tocPage.style.height = '297mm';
+    tocPage.style.padding = '20mm';
     tocPage.style.boxSizing = 'border-box';
     tocPage.style.backgroundColor = 'white';
-    tocPage.style.pageBreakBefore = 'always';
+    tocPage.style.fontFamily = 'Arial, sans-serif';
     
     const tocTitle = document.createElement('h1');
     tocTitle.textContent = 'Table of Contents';
     tocTitle.style.fontSize = '24px';
-    tocTitle.style.marginBottom = '1cm';
-    tocTitle.style.paddingBottom = '0.5cm';
-    tocTitle.style.borderBottom = '1px solid #eee';
+    tocTitle.style.marginBottom = '15mm';
+    tocTitle.style.paddingBottom = '5mm';
+    tocTitle.style.borderBottom = '1px solid #eeeeee';
     tocPage.appendChild(tocTitle);
     
-    const tocList = document.createElement('ul');
-    tocList.style.listStyleType = 'none';
-    tocList.style.padding = '0';
-    tocList.style.margin = '0';
-    
+    const tocContent = document.createElement('div');
     book.chapters.forEach(chapter => {
-      const listItem = document.createElement('li');
-      listItem.style.marginBottom = '0.8cm';
-      listItem.style.position = 'relative';
-      listItem.style.display = 'flex';
-      listItem.style.justifyContent = 'space-between';
-      listItem.style.borderBottom = '1px dotted #ccc';
-      listItem.style.paddingBottom = '0.3cm';
+      const chapterItem = document.createElement('div');
+      chapterItem.style.marginBottom = '8mm';
+      chapterItem.style.display = 'flex';
+      chapterItem.style.justifyContent = 'space-between';
+      chapterItem.style.alignItems = 'baseline';
+      chapterItem.style.borderBottom = '1px dotted #dddddd';
+      chapterItem.style.paddingBottom = '3mm';
       
-      const chapterLabel = document.createElement('span');
-      chapterLabel.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
-      chapterLabel.style.fontWeight = 'normal';
-      chapterLabel.style.fontSize = '16px';
-      listItem.appendChild(chapterLabel);
+      const chapterTitle = document.createElement('span');
+      chapterTitle.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
+      chapterTitle.style.fontWeight = 'normal';
+      chapterTitle.style.fontSize = '14px';
       
-      tocList.appendChild(listItem);
+      chapterItem.appendChild(chapterTitle);
+      tocContent.appendChild(chapterItem);
     });
     
-    tocPage.appendChild(tocList);
-    container.appendChild(tocPage);
+    tocPage.appendChild(tocContent);
     
-    // Add chapters
-    book.chapters.forEach((chapter, chapterIndex) => {
-      chapter.pages.forEach((page, pageIndex) => {
-        const contentPage = document.createElement('div');
-        contentPage.style.height = '11in';
-        contentPage.style.width = '8.5in';
-        contentPage.style.padding = '2cm';
-        contentPage.style.boxSizing = 'border-box';
-        contentPage.style.backgroundColor = 'white';
-        contentPage.style.pageBreakBefore = 'always';
+    // Add TOC to PDF
+    await renderPageToPdf(tocPage);
+    
+    // GENERATE CHAPTER PAGES
+    let chapterCounter = 1;
+    const totalChapters = book.chapters.length;
+    
+    for (const chapter of book.chapters) {
+      updateStatus(`Processing chapter ${chapterCounter} of ${totalChapters}...`);
+      
+      // Process each page in the chapter
+      for (let pageIndex = 0; pageIndex < chapter.pages.length; pageIndex++) {
+        const page = chapter.pages[pageIndex];
         
-        // Add chapter title if it's the start of a chapter
+        const chapterPage = document.createElement('div');
+        chapterPage.style.width = '210mm';
+        chapterPage.style.minHeight = '297mm';
+        chapterPage.style.padding = '20mm';
+        chapterPage.style.boxSizing = 'border-box';
+        chapterPage.style.backgroundColor = 'white';
+        chapterPage.style.fontFamily = 'Arial, sans-serif';
+        
+        // Chapter header if it's the start of a chapter
         if (page.isChapterStart) {
-          const chapterTitle = document.createElement('h2');
-          chapterTitle.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
-          chapterTitle.style.fontSize = '20px';
-          chapterTitle.style.marginBottom = '1cm';
-          contentPage.appendChild(chapterTitle);
+          const chapterHeader = document.createElement('h2');
+          chapterHeader.textContent = `Chapter ${chapter.number}: ${chapter.title}`;
+          chapterHeader.style.fontSize = '20px';
+          chapterHeader.style.marginBottom = '10mm';
+          chapterPage.appendChild(chapterHeader);
           
-          // Add chapter image if available
+          // Chapter image if available
           if (page.imageUrl) {
             const chapterImage = document.createElement('img');
             chapterImage.src = page.imageUrl;
             chapterImage.style.width = '100%';
-            chapterImage.style.maxHeight = '5cm';
+            chapterImage.style.maxHeight = '50mm';
             chapterImage.style.objectFit = 'cover';
-            chapterImage.style.marginBottom = '1cm';
-            chapterImage.style.borderRadius = '5px';
-            contentPage.appendChild(chapterImage);
+            chapterImage.style.marginBottom = '10mm';
+            chapterImage.style.borderRadius = '3px';
+            chapterImage.crossOrigin = 'anonymous';
+            chapterPage.appendChild(chapterImage);
           }
         }
         
-        // Add page content
-        const contentDiv = document.createElement('div');
-        contentDiv.innerHTML = page.content;
-        contentDiv.style.fontSize = '12pt';
-        contentDiv.style.lineHeight = '1.5';
-        contentPage.appendChild(contentDiv);
+        // Page content
+        const content = document.createElement('div');
+        content.style.fontSize = '12px';
+        content.style.lineHeight = '1.5';
+        content.innerHTML = page.content;
+        chapterPage.appendChild(content);
         
-        container.appendChild(contentPage);
-      });
-    });
-    
-    // Temporary add to document for HTML2PDF to work with it
-    document.body.appendChild(container);
-    
-    // Configure pdf options
-    const opt = {
-      margin: [0, 0, 0, 0],
-      filename: `${book.cover.title.replace(/\s+/g, "_")}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { 
-        scale: 2, 
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-      },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-    
-    // Generate and save PDF
-    html2pdf().from(container).set(opt).save().then(() => {
-      // Clean up - remove the container from document
-      document.body.removeChild(container);
-      toast({
-        title: "PDF Generated Successfully",
-        description: "Your book has been downloaded as a PDF file.",
-      });
-    }).catch((error) => {
-      console.error("Error in html2pdf:", error);
-      // Clean up even on error
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
+        // Add the chapter page to PDF
+        await renderPageToPdf(chapterPage);
       }
-      toast({
-        title: "PDF Generation Failed",
-        description: "There was an error creating your PDF. Please try again.",
-        variant: "destructive",
-      });
+      
+      chapterCounter++;
+    }
+    
+    updateStatus('Finalizing PDF...');
+    
+    // Save the PDF and clean up
+    pdf.save(`${book.cover.title.replace(/\s+/g, "_")}.pdf`);
+    
+    // Clean up
+    document.body.removeChild(bookContainer);
+    document.body.removeChild(statusIndicator);
+    
+    toast({
+      title: "PDF Generated Successfully",
+      description: "Your book has been downloaded as a PDF file.",
     });
     
   } catch (error) {
     console.error("Error generating PDF:", error);
+    // Clean up any elements that might have been added
+    const container = document.getElementById('book-pdf-container');
+    if (container) {
+      document.body.removeChild(container);
+    }
+    
+    const statusIndicator = document.querySelector('div[style*="position: fixed"][style*="top: 50%"]');
+    if (statusIndicator && statusIndicator.parentNode) {
+      statusIndicator.parentNode.removeChild(statusIndicator);
+    }
+    
     toast({
       title: "PDF Generation Failed",
       description: "There was an error creating your PDF. Please try again.",
