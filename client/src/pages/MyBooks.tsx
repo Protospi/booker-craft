@@ -111,7 +111,7 @@ export default function MyBooks() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-6">
           {savedBooks.map((book, index) => (
             <motion.div
               key={book.cover.title + index}
@@ -119,57 +119,79 @@ export default function MyBooks() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
-                <div className="relative aspect-[3/4] w-full overflow-hidden">
-                  <img
-                    src={book.cover.imageUrl}
-                    alt={book.cover.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent">
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-white font-bold text-xl mb-1 line-clamp-2">
-                        {book.cover.title}
-                      </h3>
-                      <p className="text-gray-200 text-sm line-clamp-2">
-                        {book.cover.subtitle}
-                      </p>
+              <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg">
+                <div className="flex flex-col md:flex-row">
+                  {/* Book Cover Miniature */}
+                  <div className="w-full md:w-1/5 h-48 md:h-auto relative">
+                    <img
+                      src={book.cover.imageUrl}
+                      alt={book.cover.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  
+                  {/* Book Information */}
+                  <div className="p-6 flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                          {book.cover.title}
+                        </h3>
+                        <p className="text-gray-600 text-sm mb-3">
+                          {book.cover.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-3 mt-4">
+                      <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
+                        <span className="font-medium">Genre:</span> {book.chapters[0].title.split(' ')[0]}
+                      </div>
+                      <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
+                        <span className="font-medium">Chapters:</span> {book.chapters.length}
+                      </div>
+                      <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
+                        <span className="font-medium">Pages:</span> {book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 text-sm text-gray-600">
+                      <p>Created on {new Date().toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                      })}</p>
                     </div>
                   </div>
-                </div>
-                <CardContent className="p-4 flex flex-col space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {book.chapters.length > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        {book.chapters.length} chapters
-                      </Badge>
-                    )}
-                    <Badge variant="secondary" className="text-xs">
-                      {new Date().toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </Badge>
-                  </div>
                   
-                  {/* Display total pages count */}
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium">Total pages:</span> {book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2} {/* +2 for cover and TOC */}
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
+                  {/* Actions */}
+                  <div className="p-6 flex flex-row md:flex-col justify-end gap-4 items-center border-t md:border-t-0 md:border-l border-gray-200">
                     <Button 
-                      variant="ghost" 
+                      variant="outline" 
                       size="sm"
-                      className="text-gray-600 hover:text-gray-900"
+                      className="text-gray-600 hover:text-gray-900 w-full"
                       onClick={() => handleViewBook(book)}
                     >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Book
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-gray-600 hover:text-gray-900 w-full"
+                      onClick={async () => {
+                        try {
+                          await generatePDF(book);
+                        } catch (error) {
+                          console.error('Error generating PDF:', error);
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
                     </Button>
                   </div>
-                </CardContent>
+                </div>
               </Card>
             </motion.div>
           ))}
