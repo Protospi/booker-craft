@@ -126,6 +126,7 @@ export function useBookGeneration() {
 
   const { mutateAsync: generateBookMutation, isPending } = useMutation({
     mutationFn: async (params: BookParams) => {
+      console.log("Book generation hook - API key in params:", params.apiKey ? "API key is present" : "No API key in params");
       const res = await apiRequest("POST", "/api/books/generate", params);
       return res.json();
     },

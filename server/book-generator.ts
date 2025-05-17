@@ -5,13 +5,16 @@ import { BookParams, Book, BookCover, BookChapter, ChapterPage } from "@shared/s
 // Get the default API key from environment variables
 const getOpenAI = (apiKey?: string) => {
   // Use provided API key if available, otherwise fall back to environment variable
-  return new OpenAI({ apiKey: apiKey || process.env.OPENAI_API_KEY || "" });
+  const finalApiKey = apiKey || process.env.OPENAI_API_KEY || "";
+  console.log("OpenAI Client - Using API key:", finalApiKey ? "API key is provided" : "No API key available");
+  return new OpenAI({ apiKey: finalApiKey });
 };
 
 export async function generateBook(params: BookParams): Promise<Book> {
   try {
     // Extract API key from params if available
     const apiKey = (params as any).apiKey;
+    console.log("Book Generator - API Key in params:", apiKey ? "API key is present" : "No API key in params");
     
     // 1. Generate book skeleton
     const skeleton = await generateBookSkeleton(params.theme, params.numChapters, params.language, apiKey);
@@ -86,6 +89,7 @@ export async function generateBookSkeleton(
 ): Promise<{ title: string; subtitle: string; chapters: Array<{ number: number; title: string }> }> {
   try {
     const openai = getOpenAI(apiKey);
+    console.log("Generating book skeleton with OpenAI API key:", apiKey);
     
     const prompt = `Create a book skeleton for a book about ${theme}. Generate a title, a subtitle, and ${numChapters} chapter titles. The content should be in ${language}.
     Return the result as JSON in this exact format:

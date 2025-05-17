@@ -11,9 +11,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Extract the API key from the request headers
       const apiKey = req.headers['x-api-key'] as string;
+      console.log("Server - API Key in headers:", apiKey ? "API key is present" : "No API key in headers");
       
       // Parse the book parameters
       const bookParams = bookParamsSchema.parse(req.body);
+      console.log("Server - API Key in request body:", bookParams.apiKey ? "API key is present in body" : "No API key in body");
       
       // Add the API key to the parameters for use in OpenAI calls
       const paramsWithApiKey = { ...bookParams, apiKey };

@@ -21,6 +21,8 @@ export default function Home() {
   const handleFormSubmit = async (params: BookParams) => {
     setView("progress");
     try {
+      console.log("Home component - API key in params:", params.apiKey ? "API key is present" : "No API key in params");
+      
       const generatedBook = await generateBook(params);
       // Save the generated book to our context
       if (generatedBook) {

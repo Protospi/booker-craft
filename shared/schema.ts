@@ -8,7 +8,8 @@ export const bookParamsSchema = z.object({
   totalPages: z.number().int().min(10).max(200),
   numImages: z.number().int().min(0).max(20),
   numChapters: z.number().int().min(1).max(20),
-  language: z.string().min(1, "Language is required")
+  language: z.string().min(1, "Language is required"),
+  apiKey: z.string().optional()
 });
 
 export type BookParams = z.infer<typeof bookParamsSchema>;

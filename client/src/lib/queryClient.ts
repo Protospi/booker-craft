@@ -12,10 +12,27 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // Create a copy of the data, and remove the apiKey field to send in the header
+  let requestData = data;
+  let headers: Record<string, string> = {};
+  
+  if (data) {
+    headers["Content-Type"] = "application/json";
+    
+    // If data contains apiKey, move it to the header
+    if (typeof data === 'object' && data !== null && 'apiKey' in data) {
+      const { apiKey, ...restData } = data as any;
+      if (apiKey) {
+        headers["X-API-Key"] = apiKey;
+      }
+      requestData = restData;
+    }
+  }
+
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    headers,
+    body: requestData ? JSON.stringify(requestData) : undefined,
     credentials: "include",
   });
 
