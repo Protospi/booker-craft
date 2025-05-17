@@ -25,12 +25,6 @@ export function Header() {
           <Link href="/my-books">
             <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.myBooks}</span>
           </Link>
-          <Link href="/about">
-            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.about}</span>
-          </Link>
-          <Link href="/help">
-            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.help}</span>
-          </Link>
         </nav>
         
         <div className="flex items-center">

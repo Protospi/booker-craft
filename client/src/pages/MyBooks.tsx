@@ -3,9 +3,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye } from "lucide-react";
-import { useCallback, useState } from "react";
-import { BookViewer } from "@/components/BookViewer";
+import { Eye, BookOpen } from "lucide-react";
+import { useCallback } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Book } from "@shared/schema";
@@ -13,22 +12,15 @@ import { Book } from "@shared/schema";
 export default function MyBooks() {
   const { savedBooks } = useBooks();
   const { t } = useLanguage();
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [, setLocation] = useLocation();
 
   const handleViewBook = useCallback((book: Book) => {
-    setSelectedBook(book);
-  }, []);
+    setLocation(`/printer/${encodeURIComponent(book.cover.title)}`);
+  }, [setLocation]);
 
   const handleCreateNew = useCallback(() => {
     setLocation("/");
   }, [setLocation]);
-
-  if (selectedBook) {
-    return (
-      <BookViewer book={selectedBook} onCreateNew={handleCreateNew} />
-    );
-  }
 
   return (
     <div className="container mx-auto px-4 py-10">
