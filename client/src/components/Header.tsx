@@ -1,5 +1,5 @@
-import { Link } from "wouter";
-import { BookOpen, Globe } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { BookOpen, Settings } from "lucide-react";
 import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -9,6 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 export function Header() {
   const { t } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [location] = useLocation();
   
   return (
     <header className="bg-white shadow-sm py-4 px-6 border-b border-gray-200">
@@ -20,16 +21,24 @@ export function Header() {
         
         <nav className="hidden md:flex space-x-8 text-sm">
           <Link href="/">
-            <span className="cursor-pointer font-medium text-primary">{t.header.home}</span>
+            <span className={`cursor-pointer font-medium ${location === '/' ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}>
+              {t.header.home}
+            </span>
           </Link>
           <Link href="/my-books">
-            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.myBooks}</span>
+            <span className={`cursor-pointer font-medium ${location === '/my-books' ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}>
+              {t.header.myBooks}
+            </span>
           </Link>
           <Link href="/about">
-            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.about}</span>
+            <span className={`cursor-pointer font-medium ${location === '/about' ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}>
+              {t.header.about}
+            </span>
           </Link>
           <Link href="/help">
-            <span className="cursor-pointer font-medium text-gray-500 hover:text-gray-900">{t.header.help}</span>
+            <span className={`cursor-pointer font-medium ${location === '/help' ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}>
+              {t.header.help}
+            </span>
           </Link>
         </nav>
         
@@ -39,10 +48,10 @@ export function Header() {
               <button 
                 type="button" 
                 className="flex items-center space-x-2"
-                aria-label="Language settings"
+                aria-label="Configuration settings"
               >
                 <Avatar className="h-8 w-8 bg-primary-100 text-primary-700 cursor-pointer">
-                  <AvatarFallback><Globe className="h-4 w-4" /></AvatarFallback>
+                  <AvatarFallback><Settings className="h-4 w-4" /></AvatarFallback>
                 </Avatar>
               </button>
             </SheetTrigger>
