@@ -5,7 +5,6 @@ import { BookViewer } from "@/components/BookViewer";
 import { useBookGeneration } from "@/hooks/use-book-generation";
 import { BookParams } from "@shared/schema";
 import { useLanguage } from "@/context/LanguageContext";
-import { useBooks } from "@/context/BookContext";
 
 export default function Home() {
   const [view, setView] = useState<"form" | "progress" | "book">("form");
@@ -15,15 +14,11 @@ export default function Home() {
     progress, 
     generationSteps 
   } = useBookGeneration();
-  const { saveBook } = useBooks();
 
   const handleFormSubmit = async (params: BookParams) => {
     setView("progress");
     try {
-      const generatedBook = await generateBook(params);
-      if (generatedBook) {
-        saveBook(generatedBook);
-      }
+      await generateBook(params);
       setView("book");
     } catch (error) {
       console.error("Error generating book:", error);
