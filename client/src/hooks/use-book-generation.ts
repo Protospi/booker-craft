@@ -161,7 +161,10 @@ export function useBookGeneration() {
   };
 
   return {
-    generateBook,
+    generateBook: async (params: BookParams) => {
+      const result = await generateBook(params);
+      return book;
+    },
     book,
     progress,
     generationSteps,

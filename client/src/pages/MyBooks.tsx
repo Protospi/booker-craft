@@ -65,7 +65,7 @@ export default function MyBooks() {
           <p className="text-gray-600 mb-6">Start creating your first AI-powered book now</p>
           <Button 
             className="bg-orange-500 hover:bg-orange-600"
-            onClick={() => navigate("/")}
+            onClick={() => setLocation("/")}
           >
             Create Your First Book
           </Button>
