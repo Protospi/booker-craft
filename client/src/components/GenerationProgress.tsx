@@ -23,7 +23,7 @@ export function GenerationProgress({ progress, steps }: GenerationProgressProps)
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sm:p-8">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">{t.generationProgress.generating}</h2>
-          <p className="text-gray-600">Please wait while we generate your content...</p>
+          <p className="text-gray-600">{t.generationProgress.waitMessage}</p>
         </div>
         
         <div className="space-y-6">
@@ -61,10 +61,10 @@ export function GenerationProgress({ progress, steps }: GenerationProgressProps)
                       {step.name}
                     </span>
                     {step.status === "complete" && (
-                      <span className="text-sm text-success">Complete</span>
+                      <span className="text-sm text-success">{t.generationProgress.complete}</span>
                     )}
                     {step.status === "in-progress" && step.progress !== undefined && (
-                      <span className="text-sm text-primary">{step.progress}% complete</span>
+                      <span className="text-sm text-primary">{step.progress}{t.generationProgress.percentComplete}</span>
                     )}
                   </div>
                   {step.status === "in-progress" && step.progress !== undefined && (
@@ -88,7 +88,7 @@ export function GenerationProgress({ progress, steps }: GenerationProgressProps)
                 </svg>
               </div>
               <p>
-                Creating your book may take a few minutes. We're generating high-quality content customized to your specifications.
+                {t.generationProgress.alertMessage}
               </p>
             </AlertDescription>
           </Alert>
