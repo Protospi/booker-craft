@@ -23,7 +23,7 @@ export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
     hmr: { server },
-    allowedHosts: true,
+    allowedHosts: ['localhost'] as true | string[] | undefined,
   };
 
   const vite = await createViteServer({
@@ -39,6 +39,9 @@ export async function setupVite(app: Express, server: Server) {
     server: serverOptions,
     appType: "custom",
   });
+
+  // Serve static files from client/public directory in development mode
+  app.use(express.static(path.resolve(import.meta.dirname, "..", "client", "public")));
 
   app.use(vite.middlewares);
   app.use("*", async (req, res, next) => {
@@ -77,6 +80,12 @@ export function serveStatic(app: Express) {
   }
 
   app.use(express.static(distPath));
+  
+  // Also serve files from client/public
+  const clientPublicPath = path.resolve(import.meta.dirname, "..", "client", "public");
+  if (fs.existsSync(clientPublicPath)) {
+    app.use(express.static(clientPublicPath));
+  }
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {

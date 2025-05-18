@@ -50,8 +50,8 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
   return (
     <div className="py-4 px-6">
       <div className="mb-6">
-        <h3 className="text-lg font-medium mb-2">Application Settings</h3>
-        <p className="text-sm text-gray-500">Configure your application preferences</p>
+        <h3 className="text-lg font-medium mb-2">{t.settings.title}</h3>
+        <p className="text-sm text-gray-500">{t.settings.description}</p>
       </div>
 
       <Tabs 
@@ -61,8 +61,8 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
         className="mb-6"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="api-key">API Key</TabsTrigger>
-          <TabsTrigger value="language">{t.languageSelection.title}</TabsTrigger>
+          <TabsTrigger value="api-key">{t.settings.apiKey.tabName}</TabsTrigger>
+          <TabsTrigger value="language">{t.settings.language.tabName}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="api-key" className="space-y-4 pt-4">
@@ -70,15 +70,15 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center">
                 <Key className="h-4 w-4 mr-2" /> 
-                OpenAI API Key
+                {t.settings.apiKey.title}
               </CardTitle>
               <CardDescription>
-                Enter your OpenAI API key to use the application's AI features
+                {t.settings.apiKey.description}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Label htmlFor="api-key">API Key</Label>
+                <Label htmlFor="api-key">{t.settings.apiKey.label}</Label>
                 <Input 
                   id="api-key" 
                   type="password" 
@@ -87,7 +87,7 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
                   onChange={handleApiKeyChange}
                 />
                 <p className="text-xs text-gray-500">
-                  Your API key is stored securely in your browser and is only used for requests to OpenAI.
+                  {t.settings.apiKey.securityNote}
                 </p>
               </div>
             </CardContent>
@@ -107,7 +107,7 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
               <RadioGroupItem value="en" id="en" className="sr-only" />
               <Label htmlFor="en" className="flex flex-1 cursor-pointer items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="font-medium">English</div>
+                  <div className="font-medium">{t.settings.language.english}</div>
                 </div>
                 {selectedLanguage === 'en' && <Check className="h-5 w-5 text-primary" />}
               </Label>
@@ -120,7 +120,7 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
               <RadioGroupItem value="pt" id="pt" className="sr-only" />
               <Label htmlFor="pt" className="flex flex-1 cursor-pointer items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="font-medium">Português</div>
+                  <div className="font-medium">{t.settings.language.portuguese}</div>
                 </div>
                 {selectedLanguage === 'pt' && <Check className="h-5 w-5 text-primary" />}
               </Label>
@@ -133,7 +133,7 @@ export function LanguageSelector({ onClose }: LanguageSelectorProps) {
               <RadioGroupItem value="es" id="es" className="sr-only" />
               <Label htmlFor="es" className="flex flex-1 cursor-pointer items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="font-medium">Español</div>
+                  <div className="font-medium">{t.settings.language.spanish}</div>
                 </div>
                 {selectedLanguage === 'es' && <Check className="h-5 w-5 text-primary" />}
               </Label>

@@ -94,7 +94,7 @@ export default function MyBooks() {
         >
           <ChevronLeft className="h-4 w-4" />
           <List className="h-4 w-4 mr-1" />
-          Back to All Books
+          {t.myBooks.backToList}
         </Button>
         
         {/* Use the original BookViewer component */}
@@ -114,8 +114,8 @@ export default function MyBooks() {
         </h1>
         <p className="text-gray-600">
           {savedBooks.length > 0
-            ? "Here are all your created books. Click on any book to view it."
-            : "You haven't created any books yet. Go to the home page to create your first book!"}
+            ? t.myBooks.introWithBooks
+            : t.myBooks.introNoBooks}
         </p>
       </div>
 
@@ -137,13 +137,13 @@ export default function MyBooks() {
               />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No books found</h3>
-          <p className="text-gray-600 mb-6">Start creating your first AI-powered book now</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t.myBooks.noBookTitle}</h3>
+          <p className="text-gray-600 mb-6">{t.myBooks.noBookDescription}</p>
           <Button 
             className="bg-orange-500 hover:bg-orange-600"
             onClick={() => setLocation("/")}
           >
-            Create Your First Book
+            {t.myBooks.createFirstBook}
           </Button>
         </div>
       ) : (
@@ -192,18 +192,18 @@ export default function MyBooks() {
                     
                     <div className="flex flex-wrap gap-3 mt-4">
                       <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
-                        <span className="font-medium">Genre:</span> {book.chapters[0].title.split(' ')[0]}
+                        <span className="font-medium">{t.myBooks.bookDetails.genre}:</span> {book.chapters[0].title.split(' ')[0]}
                       </div>
                       <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
-                        <span className="font-medium">Chapters:</span> {book.chapters.length}
+                        <span className="font-medium">{t.myBooks.bookDetails.chapters}:</span> {book.chapters.length}
                       </div>
                       <div className="bg-gray-100 px-3 py-1 rounded-md text-sm">
-                        <span className="font-medium">Pages:</span> {book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2}
+                        <span className="font-medium">{t.myBooks.bookDetails.pages}:</span> {book.chapters.reduce((total, chapter) => total + chapter.pages.length, 0) + 2}
                       </div>
                     </div>
                     
                     <div className="mt-4 text-sm text-gray-600">
-                      <p>Created on {new Date().toLocaleDateString("en-US", {
+                      <p>{t.myBooks.bookDetails.createdOn} {new Date().toLocaleDateString("en-US", {
                         year: "numeric",
                         month: "long",
                         day: "numeric"
@@ -220,7 +220,7 @@ export default function MyBooks() {
                       onClick={() => handleViewBook(book)}
                     >
                       <Eye className="h-4 w-4 mr-2" />
-                      View
+                      {t.myBooks.actions.view}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -235,7 +235,7 @@ export default function MyBooks() {
                       }}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Download
+                      {t.myBooks.actions.download}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -244,7 +244,7 @@ export default function MyBooks() {
                       onClick={() => handleDeleteClick(book)}
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
+                      {t.myBooks.actions.delete}
                     </Button>
                   </div>
                 </div>
@@ -260,19 +260,19 @@ export default function MyBooks() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center">
               <AlertTriangle className="h-5 w-5 text-red-500 mr-2" />
-              Delete Book
+              {t.myBooks.deleteDialog.title}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{bookToDelete?.cover.title}"? This action cannot be undone.
+              {bookToDelete ? t.myBooks.deleteDialog.description.replace('{title}', bookToDelete.cover.title) : ''}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t.myBooks.deleteDialog.cancel}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              Delete
+              {t.myBooks.deleteDialog.confirm}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

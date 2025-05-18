@@ -33,7 +33,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
     resolver: zodResolver(bookParamsSchema),
     defaultValues: {
       theme: "",
-      totalPages: 50,
+      totalPages: 10,
       numImages: 5,
       numChapters: 5,
       language: "english"
@@ -48,8 +48,8 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
       
       if (!apiKey || apiKey.trim() === '') {
         toast({
-          title: "API Key Required",
-          description: "To generate a book, please provide an OpenAI API key in the settings.",
+          title: t.bookForm.apiKeyRequired,
+          description: t.bookForm.apiKeyRequiredDescription,
           variant: "destructive",
         });
         return;
@@ -62,8 +62,8 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
       await onSubmit(valuesWithApiKey);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to generate book. Please try again.",
+        title: t.bookForm.error,
+        description: t.bookForm.errorDescription,
         variant: "destructive",
       });
       console.error("Form submission error:", error);
@@ -104,7 +104,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                   <FormLabel>{t.bookForm.theme}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Cooking recipes, Science fiction, Travel guide..."
+                      placeholder={t.bookForm.themePlaceholder}
                       {...field}
                     />
                   </FormControl>
@@ -129,7 +129,6 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                           {...field}
                           onChange={(e) => field.onChange(Number(e.target.value))}
                         />
-                        <div className="ml-2 text-sm text-gray-500">pages</div>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -142,7 +141,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="numChapters"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t.bookForm.genre}</FormLabel>
+                    <FormLabel>{t.bookForm.numChapters}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -162,7 +161,7 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                 name="numImages"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t.bookForm.setting}</FormLabel>
+                    <FormLabel>{t.bookForm.numImages}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -193,14 +192,14 @@ export function BookCreationForm({ onSubmit }: BookFormProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="spanish">Spanish</SelectItem>
-                        <SelectItem value="french">French</SelectItem>
-                        <SelectItem value="german">German</SelectItem>
-                        <SelectItem value="italian">Italian</SelectItem>
-                        <SelectItem value="portuguese">Portuguese</SelectItem>
-                        <SelectItem value="chinese">Chinese</SelectItem>
-                        <SelectItem value="japanese">Japanese</SelectItem>
+                        <SelectItem value="english">{t.bookForm.languageEnglish}</SelectItem>
+                        <SelectItem value="spanish">{t.bookForm.languageSpanish}</SelectItem>
+                        <SelectItem value="french">{t.bookForm.languageFrench}</SelectItem>
+                        <SelectItem value="german">{t.bookForm.languageGerman}</SelectItem>
+                        <SelectItem value="italian">{t.bookForm.languageItalian}</SelectItem>
+                        <SelectItem value="portuguese">{t.bookForm.languagePortuguese}</SelectItem>
+                        <SelectItem value="chinese">{t.bookForm.languageChinese}</SelectItem>
+                        <SelectItem value="japanese">{t.bookForm.languageJapanese}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
